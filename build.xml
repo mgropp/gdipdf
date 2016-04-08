@@ -1,0 +1,104 @@
+<project name="gdipdf" default="jar" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="project.version" value="0.1" />
+	
+	<property name="src" location="${basedir}/src" />
+	<property name="src-gen" location="${basedir}/src-generated" />
+	<property name="lex" location="${basedir}/lex" />
+	<property name="bin" location="${basedir}/bin" />
+	<property name="jar" location="${basedir}/${ant.project.name}.jar" />
+	<property name="ivy.lib.dir" location="${basedir}/lib" />
+	<property name="tmp" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
+	
+	<property name="jflex.java" location="${src-gen}/de/fau/cs/gdi/gdipdf/JavaLexer.java" />
+	
+	<path id="project.class.path">
+		<pathelement location="${bin}" />
+		<fileset dir="${ivy.lib.dir}" includes="*.jar" />
+	</path>
+
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${bin}" />
+	</target>
+
+	<target name="stamp" description="Replace $$Id...$$ in source files" depends="init">
+		<replaceregexp byline="true">
+			<regexp pattern="\$$Built\$$|\$$Built: [^\n]*?\$$" />
+			<substitution expression="$$Built: ${DSTAMP} ${TSTAMP} ${user.name}$$"/>
+			<fileset dir="${src}">
+				<include name="**/*.java" />
+			</fileset>
+		</replaceregexp>
+	</target>
+
+	<target name="jflex" description="generate lexer" depends="init" unless="jflex.uptodate">
+		<exec dir="${lex}" executable="jflex">
+			<arg line="JavaLexer.flex" />
+		</exec>
+		<mkdir dir="${src-gen}/de/fau/cs/gdi/gdipdf" />
+		<move file="${lex}/JavaLexer.java" tofile="${jflex.java}" />
+	</target>
+
+	<target name="jflex-check-uptodate" description="check if lexer needs to be generated" depends="init,jflex-check-exists" if="jflex.javaexists">
+		<uptodate targetfile="${jflex.java}" srcfile="${lex}/JavaLexer.flex" property="jflex.uptodate" />
+	</target>
+	
+	<target name="jflex-check-exists" description="check if lexer needs to be generated" depends="init">
+		<available file="${jflex.java}" property="jflex.javaexists" />
+	</target>
+
+	<target name="compile" description="compile project" depends="init,stamp,resolve,jflex-check-uptodate,jflex">
+		<javac
+			classpathref="project.class.path"
+			destdir="${bin}"
+			fork="yes"
+			includeantruntime="false"
+			target="1.5"
+		>
+			<src path="${src}"/>
+			<src path="${src-gen}"/>
+		</javac>
+	</target>
+
+	<target name="clean" description="clean up" >
+		<delete dir="${bin}"/>
+	</target>
+
+	<target name="dist-clean" depends="clean" description="clean up more">
+		<delete file="${jar}" />
+	</target>
+
+    <target name="jar" depends="compile" description="build a single jar including libraries">
+		<delete file="${jar}" />
+		<delete dir="${tmp}" />
+		<mkdir dir="${tmp}" />
+		<unzip dest="${tmp}">
+			<fileset dir="${ivy.lib.dir}" includes="**/*.jar" />
+		</unzip>
+		<delete dir="${tmp}/META-INF/" />
+		<jar destfile="${jar}" compress="true">
+			<manifest>
+				<attribute name="Main-Class" value="de.fau.cs.gdi.GdiPdf" />
+			</manifest>
+			<fileset dir="${bin}" includes="**/*.class" />
+			<fileset dir="${tmp}" excludes="*.html" />
+		</jar>
+		<delete dir="${tmp}" deleteonexit="yes" />
+	</target>
+	
+	<available
+		property="ivy.done"
+		file="${ivy.lib.dir}/ivy.done"
+		type="file"
+	/>
+	<target name="resolve" description="retrieve dependencies with ivy (but accept existing)" unless="ivy.done">
+		<ivy:retrieve/>
+		<touch file="${ivy.lib.dir}/ivy.done" />
+	</target>
+
+	<target name="resolve-latest" description="retrieve dependencies with ivy">
+		<ivy:retrieve/>
+		<touch file="${ivy.lib.dir}/ivy.done" />
+	</target>
+</project>
+

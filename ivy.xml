@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+    <info organisation="de.fau.cs.gdi" module="gdipdf" />
+    <dependencies>
+		<dependency org="com.ibm.icu" name="icu4j" rev="4.8.1.1"/>
+		<dependency org="com.itextpdf" name="itextpdf" rev="5.1.2"/>
+	</dependencies>
+</ivy-module>
+
