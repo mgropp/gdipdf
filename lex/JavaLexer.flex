@@ -39,6 +39,7 @@ import java.io.IOException;
 	public static final byte JAVA_COMMENT_STYLE = 7;
 	public static final byte JAVADOC_COMMENT_STYLE = 8;
 	public static final byte JAVADOC_TAG_STYLE = 9;
+	public static final byte TUTOR_COMMENT_STYLE = 10;
 	
 	/* Highlighter implementation */
 	
@@ -109,7 +110,7 @@ FLit4 = [0-9]+ {Exponent}?
 
 Exponent = [eE] [+\-]? [0-9]+
 
-%state IN_COMMENT, IN_JAVA_DOC_COMMENT
+%state IN_COMMENT, IN_JAVA_DOC_COMMENT, IN_TUTOR_COMMENT
 
 %%
 
@@ -154,7 +155,8 @@ Exponent = [eE] [+\-]? [0-9]+
   "throws" |
   "try" |
   "volatile" |
-  "strictfp" { return KEYWORD_STYLE; }
+  "strictfp" |
+  "assert" { return KEYWORD_STYLE; }
 
   "boolean" |
   "byte" |
@@ -165,8 +167,6 @@ Exponent = [eE] [+\-]? [0-9]+
   "float" |
   "short" |
   "void" { return TYPE_STYLE; }
-
-  "assert" { return ASSERT_IS_KEYWORD ? KEYWORD_STYLE : PLAIN_STYLE; }
 
   /* literals */
   "true" |
@@ -232,6 +232,7 @@ Exponent = [eE] [+\-]? [0-9]+
 // comment start
   
   "/**"     { yybegin(IN_JAVA_DOC_COMMENT); return JAVADOC_COMMENT_STYLE;}
+  "/*!"     { yybegin(IN_TUTOR_COMMENT); return TUTOR_COMMENT_STYLE;}
   "/*"      { yybegin(IN_COMMENT);  return JAVA_COMMENT_STYLE;}
 
 }
@@ -267,6 +268,19 @@ Exponent = [eE] [+\-]? [0-9]+
 	
   "@" {Identifier} { return JAVADOC_TAG_STYLE;  }
 	
+}
+
+// tutor comment mode
+<IN_TUTOR_COMMENT> {
+
+  // comment unterminated
+
+  ([^\n*]|\*+[^\n*/])* (\n | \*+\n)  { return TUTOR_COMMENT_STYLE; }
+
+  // comment terminated
+
+  ([^\n*]|\*+[^\n*/])* \*+ "/"  { yybegin(YYINITIAL); return TUTOR_COMMENT_STYLE; }
+  
 }
 
 /* error fallback */

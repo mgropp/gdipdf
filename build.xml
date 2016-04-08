@@ -1,5 +1,5 @@
 <project name="gdipdf" default="jar" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
-	<property name="project.version" value="0.1" />
+	<property name="project.version" value="0.12" />
 	
 	<property name="src" location="${basedir}/src" />
 	<property name="src-gen" location="${basedir}/src-generated" />
@@ -17,14 +17,16 @@
 	</path>
 
 	<target name="init">
-		<tstamp/>
+		<tstamp>
+			<format property="datetime" pattern="yyyy-MM-dd HH:mm" />
+		</tstamp>
 		<mkdir dir="${bin}" />
 	</target>
 
 	<target name="stamp" description="Replace $$Id...$$ in source files" depends="init">
 		<replaceregexp byline="true">
-			<regexp pattern="\$$Built\$$|\$$Built: [^\n]*?\$$" />
-			<substitution expression="$$Built: ${DSTAMP} ${TSTAMP} ${user.name}$$"/>
+			<regexp pattern="\$$buildinfo\$$|\$$buildinfo: [^\n]*?\$$" />
+			<substitution expression="$$buildinfo: ${datetime} ${user.name}$$"/>
 			<fileset dir="${src}">
 				<include name="**/*.java" />
 			</fileset>
@@ -47,7 +49,7 @@
 		<available file="${jflex.java}" property="jflex.javaexists" />
 	</target>
 
-	<target name="compile" description="compile project" depends="init,stamp,resolve,jflex-check-uptodate,jflex">
+	<target name="compile" description="compile project" depends="init,resolve,jflex-check-uptodate,jflex">
 		<javac
 			classpathref="project.class.path"
 			destdir="${bin}"
@@ -73,12 +75,16 @@
 		<delete dir="${tmp}" />
 		<mkdir dir="${tmp}" />
 		<unzip dest="${tmp}">
-			<fileset dir="${ivy.lib.dir}" includes="**/*.jar" />
+			<fileset dir="${ivy.lib.dir}">
+				<include name="**/*.jar" />
+				<exclude name="**/*-sources.jar" />
+				<exclude name="**/*-javadoc.jar" />
+			</fileset>
 		</unzip>
 		<delete dir="${tmp}/META-INF/" />
 		<jar destfile="${jar}" compress="true">
 			<manifest>
-				<attribute name="Main-Class" value="de.fau.cs.gdi.GdiPdf" />
+				<attribute name="Main-Class" value="de.fau.cs.gdi.gdipdf.GdiPdf" />
 			</manifest>
 			<fileset dir="${bin}" includes="**/*.class" />
 			<fileset dir="${tmp}" excludes="*.html" />

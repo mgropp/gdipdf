@@ -1,4 +1,4 @@
-package de.fau.cs.gdi.style;
+package de.fau.cs.gdi.gdipdf.style;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -10,7 +10,6 @@ import java.io.IOException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Rectangle;
@@ -19,27 +18,47 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfWriter;
 
-import de.fau.cs.gdi.gdipdf.JavaLexer;
+import de.fau.cs.gdi.gdipdf.TokenStyle;
 
 /**
  * GdiPdf default pdf style (landscape).
  * @author Martin Gropp
- * @version $Built: 20160408 1029 gropp$
  */
 public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
-	private String student = "";
-	private String file = "";
-	private String assignment = "";
+	protected String student = "";
+	protected String file = "";
+	protected String assignment = "";
+	protected boolean lineNumbers = false;
 	
-	private static Font normalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL);
-	private static Font keywordFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD, new BaseColor(0x074185)); 
-	private static Font typeFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD);
-	private static Font commentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(Color.GRAY));
-	private static Font literalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL, new BaseColor(0x092C47));
+	protected Font normalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL);
+	protected Font keywordFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD, new BaseColor(0x074185)); 
+	protected Font typeFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD);
+	protected Font commentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(Color.GRAY));
+	protected Font literalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL, new BaseColor(0x092C47));
+	protected Font lineNumberFont = new Font(Font.FontFamily.COURIER, 8, Font.NORMAL, new BaseColor(Color.GRAY));
+	protected Font tutorCommentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(0xCC1111));
+	
+	protected BaseFont headerFont;
+	protected BaseFont headerFontBold;
+	{
+		try {
+			headerFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+			headerFontBold = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+		}
+		catch (DocumentException e) {
+			throw new RuntimeException(e);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	@Override
-	public Rectangle getPageSize() {
-		return PageSize.A4.rotate();
+	public void setPageSize(Document document) {
+		document.setPageSize(PageSize.A4.rotate());
+		document.setMarginMirroring(false);
+		float leftMargin = lineNumbers ? 24 : 36;
+		document.setMargins(leftMargin, 36, 48, 36);
 	}
 	
 	@Override
@@ -48,33 +67,39 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	}
 	
 	@Override
-	public Font getFont(byte style) {
+	public Font getFont(TokenStyle style) {
 		switch (style) {
-		case JavaLexer.KEYWORD_STYLE:
+		case LINE_NUMBER_STYLE:
+			return lineNumberFont;
+			
+		case KEYWORD_STYLE:
 			return keywordFont;
 			
-		case JavaLexer.OPERATOR_STYLE:
-		case JavaLexer.TYPE_STYLE:
+		case TYPE_STYLE:
 			return typeFont;
 
-		case JavaLexer.JAVA_COMMENT_STYLE:
-		case JavaLexer.JAVADOC_COMMENT_STYLE:
-		case JavaLexer.JAVADOC_TAG_STYLE:
+		case JAVA_COMMENT_STYLE:
+		case JAVADOC_COMMENT_STYLE:
+		case JAVADOC_TAG_STYLE:
 			return commentFont;
 
-		case JavaLexer.LITERAL_STYLE:	
+		case LITERAL_STYLE:	
 			return literalFont;
 			
-		case JavaLexer.PLAIN_STYLE:
-		case JavaLexer.SEPARATOR_STYLE:
+		case TUTOR_COMMENT_STYLE:
+			return tutorCommentFont;
+			
+		case PLAIN_STYLE:
+		case OPERATOR_STYLE:
+		case SEPARATOR_STYLE:
 		default:
 			return normalFont;
 		}
 	}
-
+	
 	@Override
 	public void onEndPage(PdfWriter writer, Document document) {
-		PdfContentByte cb = writer.getDirectContent();
+		PdfContentByte cb = writer.getDirectContentUnder();
 		cb.saveState();
 		Rectangle pageSize = writer.getPageSize();
 		
@@ -93,9 +118,6 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 		Rectangle2D header = new Rectangle2D.Double(border.getX(), border.getY(), border.getWidth(), headerSize);
 		Line2D headerLine = new Line2D.Double(header.getX(), header.getY() + header.getHeight(), header.getX() + header.getWidth(), header.getY() + header.getHeight());
 		
-		BaseFont headerFont = getBaseFont(BaseFont.HELVETICA);
-		BaseFont headerFontBold = getBaseFont(BaseFont.HELVETICA_BOLD);
-		
 		Graphics2D g = cb.createGraphics(pageSize.getWidth(), pageSize.getHeight());
 		try {
 			g.setColor(headerColor);
@@ -110,59 +132,55 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 		}
 
 		float textY = pageSize.getHeight() - (float)headerLine.getY1() + 7;
-		cb.setColorFill(new BaseColor(textColor));
 		
+		cb.beginText();
+		cb.setColorFill(new BaseColor(textColor));
 		cb.setFontAndSize(headerFont, 12);
 		cb.showTextAlignedKerned(
-			Element.ALIGN_LEFT,
+			PdfContentByte.ALIGN_LEFT,
 			student,
 			(float)border.getX() + 8,
 			textY+1,
 			0
-		);			
+		);
+		cb.endText();
 		
+		cb.beginText();
 		cb.setFontAndSize(headerFontBold, 14);
 		cb.showTextAlignedKerned(
-			Element.ALIGN_CENTER,
+			PdfContentByte.ALIGN_CENTER,
 			file,
 			pageSize.getWidth() / 2,
 			textY,
 			0
 		);
+		cb.endText();
 		
+		cb.beginText();
 		cb.setFontAndSize(headerFont, 12);
 		cb.showTextAlignedKerned(
-			Element.ALIGN_RIGHT,
+			PdfContentByte.ALIGN_RIGHT,
 			assignment,
 			(float)(border.getX() + border.getWidth()) - 8,
 			textY+1,
 			0
 		);
+		cb.endText();
 		
+		cb.beginText();
 		cb.setFontAndSize(headerFont, 12);
 		cb.showTextAlignedKerned(
-			Element.ALIGN_RIGHT,
+			PdfContentByte.ALIGN_RIGHT,
 			"Seite " + writer.getPageNumber(),
 			(float)(border.getX() + border.getWidth()),
 			(float)(pageSize.getHeight() - (border.getY() + border.getHeight()) - 15),
 			0
 		);
+		cb.endText();
 		
 		cb.restoreState();
 	}
 
-	private static BaseFont getBaseFont(String name) {
-		try {
-			return BaseFont.createFont(name, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-		}
-		catch (DocumentException e) {
-			throw new RuntimeException(e);
-		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	@Override
 	public void setStudentName(String student) {
 		this.student = student;
@@ -176,6 +194,16 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	@Override
 	public void setAssignmentName(String assignment) {
 		this.assignment = assignment;
+	}
+	
+	@Override
+	public String getLineNumberFormat() {
+		return lineNumbers ? "%3d " : null;
+	}
+	
+	@Override
+	public void setLineNumbers(boolean lineNumbers) {
+		this.lineNumbers = lineNumbers;
 	}
 	
 	@Override
