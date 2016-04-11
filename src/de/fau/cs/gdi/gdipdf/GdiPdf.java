@@ -39,10 +39,10 @@ import de.fau.cs.gdi.gdipdf.style.SimpleStyle;
 /**
  * GdiPdf
  * @author Martin Gropp
- * @version $buildinfo: 2011-12-01 15:07 simagrop$
+ * @version $buildinfo: 2016-04-11 12:02 gropp$
  */
 public class GdiPdf {
-	private static final String BUILDINFO = "$buildinfo: 2011-12-01 15:07 simagrop$";
+	private static final String BUILDINFO = "$buildinfo: 2016-04-11 12:02 gropp$";
 	public static final String VERSION = BUILDINFO.substring(BUILDINFO.indexOf(' ')+1, BUILDINFO.length()-1);
 
 	private static final Pattern assignmentDirPattern = Pattern.compile("([^_]+)_(.*)_([^_]+)");
@@ -423,6 +423,7 @@ public class GdiPdf {
 			
 			GdiPdfCli.main(opt);
 		} else {
+			/*
 			try {
 				String defaultLAF = UIManager.getSystemLookAndFeelClassName();
 				if ("javax.swing.plaf.metal.MetalLookAndFeel".equals(defaultLAF)) {
@@ -432,6 +433,7 @@ public class GdiPdf {
 			}
 			catch (Exception e) {
 			}
+			*/
 				
 			GdiPdfGui frame = new GdiPdfGui(
 				(opt.assignmentDirs == null || opt.assignmentDirs.isEmpty()) ?

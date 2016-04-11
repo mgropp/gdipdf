@@ -232,7 +232,9 @@ class GdiPdfGui extends JFrame {
 				chooser.setDialogTitle("Verzeichnis auswählen");
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooser.setAcceptAllFileFilterUsed(false);
+				System.out.println("A");
 				if (chooser.showOpenDialog(GdiPdfGui.this) == JFileChooser.APPROVE_OPTION) {
+					System.out.println("B");
 					try {
 						dirTextField.setText(chooser.getSelectedFile().getCanonicalPath());
 					}
@@ -240,6 +242,7 @@ class GdiPdfGui extends JFrame {
 						dirTextField.setText(chooser.getSelectedFile().getAbsolutePath());
 					}
 				}
+				System.out.println("B");
 			}
 		};
 
