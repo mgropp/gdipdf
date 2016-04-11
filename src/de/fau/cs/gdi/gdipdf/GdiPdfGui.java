@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Vector;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -29,10 +30,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import de.fau.cs.gdi.gdipdf.style.PdfStyle;
-
 import com.itextpdf.text.DocumentException;
 
+import de.fau.cs.gdi.gdipdf.style.PdfStyle;
+
+/**
+ * GdiPdfGui
+ * @author Martin Gropp
+ */
 class GdiPdfGui extends JFrame {
 	private static final long serialVersionUID = -2186292876072970159L;
 	
@@ -41,7 +46,7 @@ class GdiPdfGui extends JFrame {
 	private final JCheckBox assignmentNameAutoCheckBox;
 	private final JTextArea logTextArea;
 	private final JButton pdfButton;
-	private final JComboBox styleBox;
+	private final JComboBox<PdfStyle> styleBox;
 	private final JCheckBox lineNumberCheckbox;
 	private final JCheckBox delEmptyCheckbox;
 	private final JCheckBox dontAskCheckbox;
@@ -75,8 +80,10 @@ class GdiPdfGui extends JFrame {
 		assignmentNameAutoCheckBox = new JCheckBox("Auto", true);
 		
 		JLabel styleLabel = new JLabel("PDF-Stil:");
-		styleBox = new JComboBox(GdiPdf.getPdfStyles().toArray());
-
+		Vector<PdfStyle> styles = new Vector<>();
+		styles.addAll(GdiPdf.getPdfStyles());
+		styleBox = new JComboBox<PdfStyle>(styles);
+		
 		lineNumberCheckbox = new JCheckBox("Zeilennummern");
 		lineNumberCheckbox.setMnemonic('Z');
 		delEmptyCheckbox = new JCheckBox("Leere Verzeichnisse löschen");

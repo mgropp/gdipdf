@@ -2,6 +2,10 @@ package de.fau.cs.gdi.gdipdf;
 
 import de.fau.cs.gdi.gdipdf.JavaLexer;
 
+/**
+ * TokenStyle
+ * @author Martin Gropp
+ */
 public enum TokenStyle {
 	PLAIN_STYLE,
 	KEYWORD_STYLE,

@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -39,10 +38,10 @@ import de.fau.cs.gdi.gdipdf.style.SimpleStyle;
 /**
  * GdiPdf
  * @author Martin Gropp
- * @version $buildinfo: 2016-04-11 12:02 gropp$
+ * @version $buildinfo: 2016-04-11 12:09 gropp$
  */
 public class GdiPdf {
-	private static final String BUILDINFO = "$buildinfo: 2016-04-11 12:02 gropp$";
+	private static final String BUILDINFO = "$buildinfo: 2016-04-11 12:09 gropp$";
 	public static final String VERSION = BUILDINFO.substring(BUILDINFO.indexOf(' ')+1, BUILDINFO.length()-1);
 
 	private static final Pattern assignmentDirPattern = Pattern.compile("([^_]+)_(.*)_([^_]+)");

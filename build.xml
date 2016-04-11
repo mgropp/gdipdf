@@ -1,5 +1,5 @@
 <project name="gdipdf" default="jar" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
-	<property name="project.version" value="0.12" />
+	<property name="project.version" value="0.1.3" />
 	
 	<property name="src" location="${basedir}/src" />
 	<property name="src-gen" location="${basedir}/src-generated" />
@@ -55,7 +55,8 @@
 			destdir="${bin}"
 			fork="yes"
 			includeantruntime="false"
-			target="1.5"
+			source="1.7"
+			target="1.7"
 		>
 			<src path="${src}"/>
 			<src path="${src-gen}"/>

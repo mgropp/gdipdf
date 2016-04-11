@@ -11,6 +11,10 @@ import com.itextpdf.text.DocumentException;
 import de.fau.cs.gdi.gdipdf.style.DefaultStyle;
 import de.fau.cs.gdi.gdipdf.style.PdfStyle;
 
+/**
+ * GdiPdfCli
+ * @author Martin Gropp
+ */
 class GdiPdfCli {
 	private static void log(Object msg) {
 		Calendar now = Calendar.getInstance();
