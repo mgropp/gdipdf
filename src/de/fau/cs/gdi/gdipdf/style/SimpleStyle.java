@@ -36,9 +36,9 @@ public class SimpleStyle extends DefaultStyle {
 		Color textColor = new Color(0xc0c0c0);
 		
 		RoundRectangle2D border = new RoundRectangle2D.Double(
-			10, 10,
-			pageSize.getWidth() - 20,
-			pageSize.getHeight() - 20,
+			20, 20,
+			pageSize.getWidth() - 40,
+			pageSize.getHeight() - 40,
 			4, 4
 		);
 
