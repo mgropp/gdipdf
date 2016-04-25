@@ -25,6 +25,8 @@ import de.fau.cs.gdi.gdipdf.TokenStyle;
  * @author Martin Gropp
  */
 public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
+	protected final boolean portrait;
+	
 	protected String student = "";
 	protected String file = "";
 	protected String assignment = "";
@@ -53,9 +55,30 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 		}
 	}
 	
+	public DefaultStyle() {
+		this(false);
+	}
+	
+	public DefaultStyle(boolean portrait) {
+		this.portrait = portrait;
+	}
+	
+	public DefaultStyle(DefaultStyle source, boolean portrait) {
+		this.student = source.student;
+		this.file = source.file;
+		this.assignment = source.assignment;
+		this.lineNumbers = source.lineNumbers;
+		this.portrait = portrait;
+	}
+	
 	@Override
 	public void setPageSize(Document document) {
-		document.setPageSize(PageSize.A4.rotate());
+		if (portrait) {
+			document.setPageSize(PageSize.A4);
+		} else {
+			document.setPageSize(PageSize.A4.rotate());
+		}
+		
 		document.setMarginMirroring(false);
 		float leftMargin = lineNumbers ? 24 : 36;
 		document.setMargins(leftMargin, 36, 48, 36);
@@ -99,7 +122,7 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	
 	@Override
 	public void onEndPage(PdfWriter writer, Document document) {
-		PdfContentByte cb = writer.getDirectContentUnder();
+		PdfContentByte cb = writer.getDirectContent();
 		cb.saveState();
 		Rectangle pageSize = writer.getPageSize();
 		
@@ -207,7 +230,29 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	}
 	
 	@Override
+	public DefaultStyle asPortrait() {
+		if (portrait) {
+			return this;
+		} else {
+			return new DefaultStyle(this, true);
+		}
+	}
+	
+	@Override
+	public DefaultStyle asLandscape() {
+		if (portrait) {
+			return new DefaultStyle(this, false);
+		} else {
+			return this;
+		}
+	}
+	
+	@Override
 	public String toString() {
-		return "Standard";
+		if (portrait) {
+			return "Standard (Hochformat)";
+		} else {
+			return "Standard";
+		}
 	}
 }

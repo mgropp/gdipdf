@@ -82,7 +82,10 @@ class GdiPdfCli {
 			}
 			
 			for (File inFile : fileList) {
-				if (!inFile.getName().endsWith(".java")) {
+				if (
+					!inFile.getName().endsWith(".java") &&
+					!inFile.getName().endsWith(".pdf")
+				) {
 					continue;
 				}
 				File outFile = Common.getPdfFilename(inFile, outputDir);
@@ -116,7 +119,14 @@ class GdiPdfCli {
 				pdfStyle.setFileName(inFile.getName());
 				pdfStyle.setAssignmentName(assignmentName);
 				
-				Processors.convertFileToPdf(inFile, outFile, pdfStyle);
+				if (inFile.getName().endsWith(".java")) {
+					Processors.convertFileToPdf(inFile, outFile, pdfStyle);
+				} else if (inFile.getName().endsWith(".pdf")) {
+					Processors.decoratePdf(inFile, outFile, pdfStyle.asPortrait(), pdfStyle.asLandscape());
+				} else {
+					throw new AssertionError();
+				}
+				
 				numConverted++;
 			}
 		}

@@ -19,4 +19,6 @@ public interface PdfStyle extends PdfPageEvent {
 	void setAssignmentName(String assignment);
 	void setLineNumbers(boolean lineNumbers);
 	String getLineNumberFormat();
+	PdfStyle asPortrait();
+	PdfStyle asLandscape();
 }

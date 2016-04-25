@@ -17,9 +17,26 @@ import com.itextpdf.text.pdf.PdfWriter;
  * @author Martin Gropp
  */
 public class SimpleStyle extends DefaultStyle {
+	public SimpleStyle() {
+		this(false);
+	}
+	
+	public SimpleStyle(boolean portrait) {
+		super(portrait);
+	}
+	
+	public SimpleStyle(SimpleStyle source, boolean portrait) {
+		super(source, portrait);
+	}
+	
 	@Override
 	public void setPageSize(Document document) {
-		document.setPageSize(PageSize.A4.rotate());
+		if (portrait) {
+			document.setPageSize(PageSize.A4);
+		} else {
+			document.setPageSize(PageSize.A4.rotate());
+		}
+		
 		document.setMarginMirroring(false);
 		float leftMargin = lineNumbers ? 24 : 36;
 		document.setMargins(leftMargin, 36, 36, 36);
@@ -27,8 +44,9 @@ public class SimpleStyle extends DefaultStyle {
 	
 	@Override
 	public void onEndPage(PdfWriter writer, Document document) {
-		PdfContentByte cb = writer.getDirectContentUnder();
+		PdfContentByte cb = writer.getDirectContent();
 		cb.saveState();
+		
 		Rectangle pageSize = writer.getPageSize();
 
 		Color borderColor = new Color(0xc0c0c0);
@@ -112,7 +130,29 @@ public class SimpleStyle extends DefaultStyle {
 	}
 	
 	@Override
+	public SimpleStyle asPortrait() {
+		if (portrait) {
+			return this;
+		} else {
+			return new SimpleStyle(this, true);
+		}
+	}
+	
+	@Override
+	public SimpleStyle asLandscape() {
+		if (portrait) {
+			return new SimpleStyle(this, false);
+		} else {
+			return this;
+		}
+	}
+	
+	@Override
 	public String toString() {
-		return "Einfach";
+		if (portrait) {
+			return "Einfach (Hochformat)";
+		} else {
+			return "Einfach";
+		}
 	}
 }

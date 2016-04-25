@@ -14,16 +14,16 @@ import de.fau.cs.gdi.gdipdf.style.PdfStyle;
 import de.fau.cs.gdi.gdipdf.style.SimpleStyle;
 import de.fau.cs.gdi.gdipdf.style.SimpleStylePortrait;
 
+/**
+ * Common GdiPdf functions.
+ * @author Martin Gropp
+ */
 public class Common {
 	private static final Pattern assignmentDirPattern = Pattern.compile("([^_]+)_(.*)_([^_]+)");
 	private static final Pattern intPattern = Pattern.compile("[0-9]+");
 	
-	public static final List<PdfStyle> pdfStylesLandscape;
-	public static final List<PdfStyle> pdfStylesPortrait;
 	public static final List<PdfStyle> pdfStyles;
 	static {
-		pdfStylesLandscape = new ArrayList<PdfStyle>();
-		pdfStylesPortrait = new ArrayList<PdfStyle>();
 		pdfStyles = new ArrayList<PdfStyle>();
 
 		String customClassName = System.getProperty("gdipdf.style", null);
@@ -43,11 +43,6 @@ public class Common {
 				throw new RuntimeException(e);
 			}
 		}
-
-		pdfStylesLandscape.add(new DefaultStyle());
-		pdfStylesLandscape.add(new SimpleStyle());
-		pdfStylesPortrait.add(new DefaultStylePortrait());
-		pdfStylesPortrait.add(new SimpleStylePortrait());
 		
 		if (!DefaultStyle.class.equals(customClass)) {
 			pdfStyles.add(new DefaultStyle());

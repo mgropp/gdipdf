@@ -25,6 +25,10 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import de.fau.cs.gdi.gdipdf.style.PdfStyle;
 
+/**
+ * Function for producing PDF files.
+ * @author Martin Gropp
+ */
 public class Processors {
 	private static final int TAB_WIDTH = 4;
 	
