@@ -51,9 +51,9 @@ class GdiPdfCli {
 		return (answer < 0) ? '\0' : (char)answer;
 	}
 	
-	private static void convertToPdf(File assignmentDir, String assignmentName, PdfStyle pdfStyle, boolean delEmpty, boolean dontAsk) throws IOException, DocumentException {
-		if (!assignmentDir.isDirectory()) {
-			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", assignmentDir.toString()));
+	private static void convertToPdf(File inputDir, File outputDir, String assignmentName, PdfStyle pdfStyle, boolean delEmpty, boolean dontAsk) throws IOException, DocumentException {
+		if (!inputDir.isDirectory()) {
+			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", inputDir.toString()));
 		}
 		
 		log("Aufgabenname: " + assignmentName);
@@ -62,12 +62,12 @@ class GdiPdfCli {
 		int numConverted = 0;
 		
 		studentLoop:
-		for (File studentDir : assignmentDir.listFiles()) {
+		for (File studentDir : inputDir.listFiles()) {
 			if (!studentDir.isDirectory()) {
 				continue;
 			}
 
-			String studentName = GdiPdf.getStudentName(studentDir); 
+			String studentName = Common.getStudentName(studentDir); 
 			log(studentName);
 
 			File[] fileList = studentDir.listFiles();
@@ -85,7 +85,7 @@ class GdiPdfCli {
 				if (!inFile.getName().endsWith(".java")) {
 					continue;
 				}
-				File outFile = GdiPdf.getPdfFilename(inFile);
+				File outFile = Common.getPdfFilename(inFile, outputDir);
 
 				if (outFile.exists() && !dontAsk) {
 					switch (
@@ -116,7 +116,7 @@ class GdiPdfCli {
 				pdfStyle.setFileName(inFile.getName());
 				pdfStyle.setAssignmentName(assignmentName);
 				
-				GdiPdf.convertFileToPdf(inFile, outFile, pdfStyle);
+				Processors.convertFileToPdf(inFile, outFile, pdfStyle);
 				numConverted++;
 			}
 		}
@@ -145,15 +145,23 @@ class GdiPdfCli {
 		
 		pdfStyle.setLineNumbers(opt.lineNumbers);
 		
+		File outputDir = new File(opt.outputDir);
+		if (!outputDir.isDirectory()) {
+			if (!outputDir.mkdirs()) {
+				log("Ausgabe-Verzeichnis konnte nicht erstellt werden: " + outputDir);
+				System.exit(10);
+			}
+		}
+		
 		for (String assignmentDirName : opt.assignmentDirs) {
 			File assignmentDir = new File(assignmentDirName);
 			
 			String assignmentName = opt.assignmentName; 
 			if (assignmentName == null) {
-				assignmentName = GdiPdf.getAssignmentName(assignmentDir);
+				assignmentName = Common.getAssignmentName(assignmentDir);
 			}
 			
-			convertToPdf(assignmentDir, assignmentName, pdfStyle, opt.delEmptyDirs, opt.overwrite);
+			convertToPdf(assignmentDir, outputDir, assignmentName, pdfStyle, opt.delEmptyDirs, opt.overwrite);
 		}
 	}
 }
