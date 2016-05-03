@@ -103,7 +103,7 @@ public class Processors {
 						break;
 					}
 
-					emptyDocument = false;					
+					emptyDocument = false;
 					String text = lexer.yytext();
 					
 					Chunk chunk = new Chunk();
