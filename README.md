@@ -36,7 +36,7 @@ ant stamp
 Eclipse
 -------
 Im Repository sind keine Eclipse-Projekt-Daten enthalten, ist also ein
-bisschen umstaendlich.
+bisschen umständlich.
 
  * Neues Eclipse-Projekt gdipdf anlegen
  * Repository in temporäres Verzeichnis klonen:
@@ -54,7 +54,7 @@ cp -r /tmp/gdipdf/* .
 cp -r /tmp/gdipdf/.git .
 ```
 
- * Benoetigte Bibliotheken herunterladen:
+ * Benötigte Bibliotheken herunterladen:
 
 ```
 ant resolve
