@@ -63,6 +63,7 @@ public class Processors {
 		finally {
 			reader.close();
 		}
+		
 		try {
 			JavaLexer lexer = new JavaLexer();
 			lexer.setReader(trimmedReader);

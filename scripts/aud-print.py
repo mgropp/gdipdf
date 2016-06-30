@@ -8,6 +8,7 @@ import shutil
 import argparse
 from glob import glob
 
+# lpstat -a
 _default_printer = "utax3560i"
 
 _clean_dirs = []
@@ -163,6 +164,10 @@ def merge_by_user(dirs, outdir):
 	
 	merged_pdfs = []
 	for student in student_pdfs:
+		if len(student_pdfs[student]) == 0:
+			print("No files found for student »%s«!" % student)
+			continue
+
 		pdfs = student_pdfs[student]
 		
 		outfile = os.path.join(outdir, "%s.pdf" % student)

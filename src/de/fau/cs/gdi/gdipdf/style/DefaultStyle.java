@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -33,12 +34,12 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	protected boolean lineNumbers = false;
 	
 	protected Font normalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL);
-	protected Font keywordFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD, new BaseColor(0x074185)); 
+	protected Font keywordFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD, new BaseColor(0xFF074185)); 
 	protected Font typeFont = new Font(Font.FontFamily.COURIER, 10, Font.BOLD);
-	protected Font commentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(Color.GRAY));
-	protected Font literalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL, new BaseColor(0x092C47));
-	protected Font lineNumberFont = new Font(Font.FontFamily.COURIER, 8, Font.NORMAL, new BaseColor(Color.GRAY));
-	protected Font tutorCommentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(0xCC1111));
+	protected Font commentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue()));
+	protected Font literalFont = new Font(Font.FontFamily.COURIER, 10, Font.NORMAL, new BaseColor(0xFF092C47));
+	protected Font lineNumberFont = new Font(Font.FontFamily.COURIER, 8, Font.NORMAL, new BaseColor(Color.GRAY.getRed(), Color.GRAY.getGreen(), Color.GRAY.getBlue()));
+	protected Font tutorCommentFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, new BaseColor(0xFFCC1111));
 	
 	protected BaseFont headerFont;
 	protected BaseFont headerFontBold;
@@ -141,7 +142,7 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 		Rectangle2D header = new Rectangle2D.Double(border.getX(), border.getY(), border.getWidth(), headerSize);
 		Line2D headerLine = new Line2D.Double(header.getX(), header.getY() + header.getHeight(), header.getX() + header.getWidth(), header.getY() + header.getHeight());
 		
-		Graphics2D g = cb.createGraphics(pageSize.getWidth(), pageSize.getHeight());
+		Graphics2D g = new PdfGraphics2D(cb, pageSize.getWidth(), pageSize.getHeight());
 		try {
 			g.setColor(headerColor);
 			g.fill(header);
@@ -157,7 +158,7 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 		float textY = pageSize.getHeight() - (float)headerLine.getY1() + 7;
 		
 		cb.beginText();
-		cb.setColorFill(new BaseColor(textColor));
+		cb.setColorFill(new BaseColor(textColor.getRed(), textColor.getGreen(), textColor.getBlue()));
 		cb.setFontAndSize(headerFont, 12);
 		cb.showTextAlignedKerned(
 			PdfContentByte.ALIGN_LEFT,

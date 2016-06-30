@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
@@ -60,7 +61,7 @@ public class SimpleStyle extends DefaultStyle {
 			4, 4
 		);
 
-		Graphics2D g = cb.createGraphics(pageSize.getWidth(), pageSize.getHeight());
+		Graphics2D g = new PdfGraphics2D(cb, pageSize.getWidth(), pageSize.getHeight());
 		try {
 			g.setColor(borderColor);
 			//g.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 2 }, 0));
@@ -79,7 +80,7 @@ public class SimpleStyle extends DefaultStyle {
 		float lead = 14.0f;
 		
 		cb.beginText();
-		cb.setColorFill(new BaseColor(emphColor));
+		cb.setColorFill(new BaseColor(emphColor.getRed(), emphColor.getGreen(), emphColor.getBlue()));
 		cb.setFontAndSize(headerFontBold, 11);
 		cb.showTextAlignedKerned(
 			PdfContentByte.ALIGN_RIGHT,
@@ -91,7 +92,7 @@ public class SimpleStyle extends DefaultStyle {
 		cb.endText();
 		
 		cb.beginText();
-		cb.setColorFill(new BaseColor(textColor));
+		cb.setColorFill(new BaseColor(textColor.getRed(), textColor.getGreen(), textColor.getBlue()));
 		cb.setFontAndSize(headerFont, 11);
 		cb.showTextAlignedKerned(
 			PdfContentByte.ALIGN_RIGHT,
@@ -103,7 +104,7 @@ public class SimpleStyle extends DefaultStyle {
 		cb.endText();
 		
 		cb.beginText();
-		cb.setColorFill(new BaseColor(textColor));
+		cb.setColorFill(new BaseColor(textColor.getRed(), textColor.getGreen(), textColor.getBlue()));
 		cb.setFontAndSize(headerFont, 11);
 		cb.showTextAlignedKerned(
 			PdfContentByte.ALIGN_RIGHT,
@@ -115,7 +116,7 @@ public class SimpleStyle extends DefaultStyle {
 		cb.endText();
 		
 		cb.beginText();
-		cb.setColorFill(new BaseColor(emphColor));
+		cb.setColorFill(new BaseColor(emphColor.getRed(), emphColor.getGreen(), emphColor.getBlue()));
 		cb.setFontAndSize(headerFont, 11);
 		cb.showTextAlignedKerned(
 			PdfContentByte.ALIGN_RIGHT,
