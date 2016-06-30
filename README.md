@@ -58,7 +58,6 @@ cp -r /tmp/gdipdf/.git .
 
 ```
 ant resolve
-
 ```
 
 (Falls man kein ant+ivy hat, muss man die o.g. Bibliotheken stattdessen
