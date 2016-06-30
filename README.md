@@ -40,23 +40,31 @@ bisschen umstaendlich.
 
  * Neues Eclipse-Projekt gdipdf anlegen
  * Repository in temporäres Verzeichnis klonen:
-   ```
-   cd /tmp
-   git clone git://redmine.cs.fau.de/gdipdf.git
-   ```
+ 
+```
+cd /tmp
+git clone git://redmine.cs.fau.de/gdipdf.git
+```
+
  * Dateien aus dem temp. Verzeichnis ins Eclipse-Verzeichnis kopieren:
-   ```
-   cd ~/workspace/gdipdf
-   cp -r /tmp/gdipdf/* .
-   cp -r /tmp/gdipdf/.git .
-   ```
+
+```
+cd ~/workspace/gdipdf
+cp -r /tmp/gdipdf/* .
+cp -r /tmp/gdipdf/.git .
+```
+
  * Benoetigte Bibliotheken herunterladen:
-   ```
-   ant resolve
-   ```
-   (Falls man kein ant+ivy hat, muss man die o.g. Bibliotheken stattdessen
-   selbst herunterladen.)
- * In Eclipse:
-   Projekt-Ordner aktualisieren,
-   alle Jars aus `lib/` in den Build Path aufnehmen,
-   `src-generated/` als Source Folder hinzufuegen.
+
+```
+ant resolve
+
+```
+
+(Falls man kein ant+ivy hat, muss man die o.g. Bibliotheken stattdessen
+selbst herunterladen.)
+
+* In Eclipse:
+  Projekt-Ordner aktualisieren,
+  alle Jars aus `lib/` in den Build Path aufnehmen,
+  `src-generated/` als Source Folder hinzufuegen.
