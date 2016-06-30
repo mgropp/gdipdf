@@ -66,4 +66,4 @@ selbst herunterladen.)
 * In Eclipse:
   Projekt-Ordner aktualisieren,
   alle Jars aus `lib/` in den Build Path aufnehmen,
-  `src-generated/` als Source Folder hinzufuegen.
+  `src-generated/` als Source Folder hinzufügen.
