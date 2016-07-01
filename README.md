@@ -23,7 +23,7 @@ Bibliotheken herunterladen:
 Klonen & Bauen
 ---------------
 ```
-git clone git://redmine.cs.fau.de/gdipdf.git
+git clone https://github.com/mgropp/gdipdf.git
 cd gdipdf
 ant
 ```
