@@ -37,6 +37,7 @@ Eclipse
 -------
 Im Repository sind keine Eclipse-Projekt-Daten enthalten, ist also ein
 bisschen umständlich.
+Einfacher als hier beschrieben geht es mit EGit.
 
  * Neues Eclipse-Projekt gdipdf anlegen
  * Repository in temporäres Verzeichnis klonen:
