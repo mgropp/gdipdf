@@ -1,7 +1,7 @@
 gdipdf
 ======
 
-Java → PDF für eine Programmier-Einführungs-Veranstaltung
+Java/PDF → PDF für eine Programmier-Einführungs-Veranstaltung
 
 
 Voraussetzungen
@@ -19,6 +19,7 @@ Bibliotheken herunterladen:
  * iText http://itextpdf.com/
  * icu4j http://site.icu-project.org/
  * args4j http://args4j.kohsuke.org/
+ * Apache Commons Lang https://commons.apache.org/proper/commons-lang/
 
 Klonen & Bauen
 ---------------
