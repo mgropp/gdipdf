@@ -4,12 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.fau.cs.gdi.gdipdf.style.DefaultStyle;
-import de.fau.cs.gdi.gdipdf.style.DefaultStylePortrait;
+import org.apache.commons.lang3.text.StrSubstitutor;
+
+import de.fau.cs.gdi.gdipdf.style.ClassicStyle;
+import de.fau.cs.gdi.gdipdf.style.ClassicStylePortrait;
 import de.fau.cs.gdi.gdipdf.style.PdfStyle;
 import de.fau.cs.gdi.gdipdf.style.SimpleStyle;
 import de.fau.cs.gdi.gdipdf.style.SimpleStylePortrait;
@@ -19,6 +23,8 @@ import de.fau.cs.gdi.gdipdf.style.SimpleStylePortrait;
  * @author Martin Gropp
  */
 public class Common {
+	public static final String DEFAULT_OUTPUT_FILENAME_PATTERN = "Korrektur-${filename}.pdf";
+	
 	private static final Pattern assignmentDirPattern = Pattern.compile("([^_]+)_(.*)_([^_]+)");
 	private static final Pattern intPattern = Pattern.compile("[0-9]+");
 	
@@ -44,11 +50,11 @@ public class Common {
 			}
 		}
 		
-		if (!DefaultStyle.class.equals(customClass)) {
-			pdfStyles.add(new DefaultStyle());
+		if (!ClassicStyle.class.equals(customClass)) {
+			pdfStyles.add(new ClassicStyle());
 		}
-		if (!DefaultStylePortrait.class.equals(customClass)) {
-			pdfStyles.add(new DefaultStylePortrait());
+		if (!ClassicStylePortrait.class.equals(customClass)) {
+			pdfStyles.add(new ClassicStylePortrait());
 		}
 		if (!SimpleStyle.class.equals(customClass)) {
 			pdfStyles.add(new SimpleStyle());
@@ -136,16 +142,27 @@ public class Common {
 	}
 	*/
 	
-	public static File getPdfFilename(File inputFile, File outputDir) throws IOException {
+	public static File getPdfFilename(File inputFile, File outputDir, String outputFilePattern) throws IOException {
 		String studentName = getStudentDirNameFromInputFile(inputFile);
 		String assignmentName = getAssignmentDirNameFromInputFile(inputFile);
+
+		String filename = inputFile.getName();
 		
-		String inputFileName = inputFile.getName();
-		int dotIndex = inputFileName.lastIndexOf('.');
+		String basename = filename;
+		String extension = "";
+		int dotIndex = filename.lastIndexOf('.');
 		if (dotIndex >= 0) {
-			inputFileName = inputFileName.substring(0, dotIndex);
+			basename = filename.substring(0, dotIndex);
+			extension = filename.substring(dotIndex+1);
 		}
-		inputFileName += ".pdf";
+		
+		Map<String,String> variables = new HashMap<>();
+		variables.put("filename", filename);
+		variables.put("basename", basename);
+		variables.put("extension", extension);
+		
+		StrSubstitutor sub = new StrSubstitutor(variables);
+		String outputFileName = sub.replace(outputFilePattern);
 		
 		File outputDirForFile = new File(new File(outputDir, assignmentName), studentName);
 		if (!outputDirForFile.isDirectory()) {
@@ -154,6 +171,6 @@ public class Common {
 			}
 		}
 		
-		return new File(outputDirForFile, inputFileName);
+		return new File(outputDirForFile, outputFileName);
 	}
 }

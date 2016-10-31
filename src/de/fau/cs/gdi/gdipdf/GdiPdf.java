@@ -45,6 +45,9 @@ public class GdiPdf {
 		@Option(name="--output-dir", usage="Ausgabe-Verzeichnis (Standard: Temp-Verzeichnis)")
 		public String outputDir = null;
 		
+		@Option(name="--output-file-pattern", usage="Ausgabe-Dateiname mit Variablen ${basename}, ${extension}, ${filename} (Standard: " + Common.DEFAULT_OUTPUT_FILENAME_PATTERN + ")")
+		public String outputFilePattern;
+		
 		@Argument
 		public List<String> assignmentDirs = null;
 	}

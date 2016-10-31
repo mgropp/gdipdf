@@ -22,10 +22,10 @@ import com.itextpdf.text.pdf.PdfWriter;
 import de.fau.cs.gdi.gdipdf.TokenStyle;
 
 /**
- * GdiPdf default pdf style (landscape).
+ * GdiPdf classic pdf style (landscape).
  * @author Martin Gropp
  */
-public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
+public class ClassicStyle extends PdfPageEventHelper implements PdfStyle {
 	protected final boolean portrait;
 	
 	protected String student = "";
@@ -56,15 +56,15 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 		}
 	}
 	
-	public DefaultStyle() {
+	public ClassicStyle() {
 		this(false);
 	}
 	
-	public DefaultStyle(boolean portrait) {
+	public ClassicStyle(boolean portrait) {
 		this.portrait = portrait;
 	}
 	
-	public DefaultStyle(DefaultStyle source, boolean portrait) {
+	public ClassicStyle(ClassicStyle source, boolean portrait) {
 		this.student = source.student;
 		this.file = source.file;
 		this.assignment = source.assignment;
@@ -231,18 +231,18 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	}
 	
 	@Override
-	public DefaultStyle asPortrait() {
+	public ClassicStyle asPortrait() {
 		if (portrait) {
 			return this;
 		} else {
-			return new DefaultStyle(this, true);
+			return new ClassicStyle(this, true);
 		}
 	}
 	
 	@Override
-	public DefaultStyle asLandscape() {
+	public ClassicStyle asLandscape() {
 		if (portrait) {
-			return new DefaultStyle(this, false);
+			return new ClassicStyle(this, false);
 		} else {
 			return this;
 		}
@@ -251,9 +251,9 @@ public class DefaultStyle extends PdfPageEventHelper implements PdfStyle {
 	@Override
 	public String toString() {
 		if (portrait) {
-			return "Standard (Hochformat)";
+			return "Klassisch (Hochformat)";
 		} else {
-			return "Standard";
+			return "Klassisch";
 		}
 	}
 }

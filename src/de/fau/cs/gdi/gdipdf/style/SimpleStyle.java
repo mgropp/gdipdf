@@ -17,7 +17,7 @@ import com.itextpdf.text.pdf.PdfWriter;
  * Another pdf style (landscape).
  * @author Martin Gropp
  */
-public class SimpleStyle extends DefaultStyle {
+public class SimpleStyle extends ClassicStyle {
 	public SimpleStyle() {
 		this(false);
 	}

@@ -43,6 +43,7 @@ class GdiPdfGui extends JFrame {
 	
 	private final JTextField inDirTextField;
 	private final JTextField outDirTextField;
+	private final JTextField outFileTextField;
 	private final JTextField assignmentNameTextField;
 	private final JCheckBox assignmentNameAutoCheckBox;
 	private final JTextArea logTextArea;
@@ -82,6 +83,17 @@ class GdiPdfGui extends JFrame {
 		outDirTextField.setPreferredSize(inDirSize);
 		
 		JButton outDirBrowseButton = new JButton(outDirBrowseAction);
+		
+		JLabel outFileLabel = new JLabel("Name der Ausgabe-Datei:");
+		outFileTextField = new JTextField();
+		outFileTextField.setText(Common.DEFAULT_OUTPUT_FILENAME_PATTERN);
+		Dimension outFileSize = outDirSize;
+		outFileTextField.setPreferredSize(outFileSize);
+		
+		outFileLabel.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
+		outFileTextField.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
+		
+		JButton outFileDefaultButton = new JButton(outFileDefaultAction);
 		
 		JLabel assignmentLabel = new JLabel("Name der Aufgabe:");
 		assignmentNameTextField = new JTextField();
@@ -157,6 +169,26 @@ class GdiPdfGui extends JFrame {
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0.0;
 		panel.add(outDirBrowseButton, c);
+		
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
+		
+		panel.add(outFileLabel, c);
+		
+		c.gridx++;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weightx = 1.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		panel.add(outFileTextField, c);
+
+		c.gridx++;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0.0;
+		panel.add(outFileDefaultButton, c);
 
 		//----------------------------------
 		c.gridx = 0;
@@ -314,6 +346,20 @@ class GdiPdfGui extends JFrame {
 
 		inDirBrowseAction.putValue(Action.MNEMONIC_KEY, (int)'U');
 	}
+	
+	private Action outFileDefaultAction;
+	{
+		outFileDefaultAction = new AbstractAction("Zurücksetzen") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				outFileTextField.setText(Common.DEFAULT_OUTPUT_FILENAME_PATTERN);
+			}
+		};
+		
+		outFileDefaultAction.putValue(Action.MNEMONIC_KEY, (int)'Z');
+	}
 
 	private Action pdfAction; 
 	{
@@ -347,6 +393,8 @@ class GdiPdfGui extends JFrame {
 								}
 							}
 							
+							String outFilePattern = outFileTextField.getText().trim();
+							
 							String assignmentNameAuto = Common.getAssignmentName(inDir);
 							if (assignmentNameAuto == null) {
 								throw new IllegalArgumentException(String.format("Der Verzeichnisname '%s' scheint kein EST-Verzeichnis zu sein. Erwartet wird etwas wie '1_Aufgabe_1_2_Foo_855'.", inDir.getCanonicalPath()));
@@ -355,7 +403,7 @@ class GdiPdfGui extends JFrame {
 							String assignmentNameManual = assignmentNameTextField.getText().trim();
 							String assignmentName = assignmentNameManual.isEmpty() ? assignmentNameAuto : assignmentNameManual;
 							
-							convertToPdf(inDir, outDir, assignmentName, delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected());
+							convertToPdf(inDir, outDir, outFilePattern, assignmentName, delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected());
 						}
 						catch (final Throwable e) {
 							e.printStackTrace();
@@ -418,7 +466,14 @@ class GdiPdfGui extends JFrame {
 
 	}
 
-	private void convertToPdf(File assignmentDir, File outputDir, String assignmentName, boolean delEmpty, boolean dontAsk) throws IOException, DocumentException {
+	private void convertToPdf(
+		File assignmentDir,
+		File outputDir,
+		String outputFilePattern,
+		String assignmentName,
+		boolean delEmpty,
+		boolean dontAsk
+	) throws IOException, DocumentException {
 		if (!assignmentDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", assignmentDir.toString()));
 		}
@@ -458,7 +513,7 @@ class GdiPdfGui extends JFrame {
 				) {
 					continue;
 				}
-				File outFile = Common.getPdfFilename(inFile, outputDir);
+				File outFile = Common.getPdfFilename(inFile, outputDir, outputFilePattern);
 
 				if (outFile.exists() && !dontAsk) {
 					switch (

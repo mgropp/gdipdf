@@ -8,7 +8,7 @@ import java.util.Calendar;
 
 import com.itextpdf.text.DocumentException;
 
-import de.fau.cs.gdi.gdipdf.style.DefaultStyle;
+import de.fau.cs.gdi.gdipdf.style.ClassicStyle;
 import de.fau.cs.gdi.gdipdf.style.PdfStyle;
 
 /**
@@ -51,7 +51,15 @@ class GdiPdfCli {
 		return (answer < 0) ? '\0' : (char)answer;
 	}
 	
-	private static void convertToPdf(File inputDir, File outputDir, String assignmentName, PdfStyle pdfStyle, boolean delEmpty, boolean dontAsk) throws IOException, DocumentException {
+	private static void convertToPdf(
+		File inputDir,
+		File outputDir,
+		String outputFilePattern,
+		String assignmentName,
+		PdfStyle pdfStyle,
+		boolean delEmpty,
+		boolean dontAsk
+	) throws IOException, DocumentException {
 		if (!inputDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", inputDir.toString()));
 		}
@@ -88,7 +96,7 @@ class GdiPdfCli {
 				) {
 					continue;
 				}
-				File outFile = Common.getPdfFilename(inFile, outputDir);
+				File outFile = Common.getPdfFilename(inFile, outputDir, outputFilePattern);
 
 				if (outFile.exists() && !dontAsk) {
 					switch (
@@ -143,7 +151,7 @@ class GdiPdfCli {
 			}
 			catch (ClassNotFoundException e) {
 				if (pdfStyleClass.indexOf('.') < 0) {
-					pdfStyleClass = DefaultStyle.class.getPackage().getName() + "." + pdfStyleClass;
+					pdfStyleClass = ClassicStyle.class.getPackage().getName() + "." + pdfStyleClass;
 					continue;
 				} else {
 					throw e;
@@ -171,7 +179,7 @@ class GdiPdfCli {
 				assignmentName = Common.getAssignmentName(assignmentDir);
 			}
 			
-			convertToPdf(assignmentDir, outputDir, assignmentName, pdfStyle, opt.delEmptyDirs, opt.overwrite);
+			convertToPdf(assignmentDir, outputDir, opt.outputFilePattern, assignmentName, pdfStyle, opt.delEmptyDirs, opt.overwrite);
 		}
 	}
 }
