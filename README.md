@@ -45,7 +45,7 @@ Einfacher als hier beschrieben geht es mit EGit.
  
 ```
 cd /tmp
-git clone git://redmine.cs.fau.de/gdipdf.git
+git clone https://github.com/mgropp/gdipdf.git
 ```
 
  * Dateien aus dem temp. Verzeichnis ins Eclipse-Verzeichnis kopieren:
