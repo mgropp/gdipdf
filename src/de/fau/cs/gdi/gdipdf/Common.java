@@ -60,7 +60,7 @@ public class Common {
 			pdfStyles.add(new SimpleStyle());
 		}
 		if (!SimpleStylePortrait.class.equals(customClass)) {
-			pdfStyles.add(new SimpleStyle());
+			pdfStyles.add(new SimpleStylePortrait());
 		}
 	}
 	
