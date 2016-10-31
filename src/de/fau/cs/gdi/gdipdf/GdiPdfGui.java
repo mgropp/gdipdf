@@ -1,6 +1,5 @@
 package de.fau.cs.gdi.gdipdf;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -24,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -41,28 +41,94 @@ import de.fau.cs.gdi.gdipdf.style.PdfStyle;
 class GdiPdfGui extends JFrame {
 	private static final long serialVersionUID = -2186292876072970159L;
 	
-	private final JTextField inDirTextField;
-	private final JTextField outDirTextField;
-	private final JTextField outFileTextField;
-	private final JTextField assignmentNameTextField;
-	private final JCheckBox assignmentNameAutoCheckBox;
-	private final JTextArea logTextArea;
-	private final JButton pdfButton;
-	private final JComboBox<PdfStyle> styleBox;
-	private final JCheckBox lineNumberCheckbox;
-	private final JCheckBox delEmptyCheckbox;
-	private final JCheckBox dontAskCheckbox;
+	private JTextField inDirTextField;
+	private JTextField outDirTextField;
+	private JTextField outFileTextField;
+	private JTextField assignmentNameTextField;
+	private JCheckBox assignmentNameAutoCheckBox;
+	private JTextArea logTextArea;
+	private JTextArea submissionsTextArea;
+	private JButton pdfButton;
+	private JComboBox<PdfStyle> styleBox;
+	private JCheckBox lineNumberCheckbox;
+	private JCheckBox delEmptyCheckbox;
+	private JCheckBox dontAskCheckbox;
 	
 	public GdiPdfGui(String inputDir, String outputDir) {
 		setTitle("GdiPdf");
 		setSize(600, 470);
 		setLocationRelativeTo(null);
-
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		getContentPane().add(panel, BorderLayout.CENTER);
-		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
+		getContentPane().setLayout(new GridBagLayout());
+		
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.setPreferredSize(getSize());
+		tabbedPane.addTab("Grundeinstellungen", createBasicPanel(inputDir, outputDir));
+		tabbedPane.addTab("Erweitert", createAdvancedPanel());
+		
+		logTextArea = new JTextArea();
+		logTextArea.setLineWrap(true);
+		logTextArea.setWrapStyleWord(true);
+		logTextArea.setEditable(false);
+		logTextArea.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		JScrollPane scrollPane = new JScrollPane(logTextArea); 
+		scrollPane.setPreferredSize(getSize());
+
+		pdfButton = new JButton(pdfAction);
+
+		GridBagConstraints c = new GridBagConstraints(
+			0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START,
+			GridBagConstraints.NONE, new Insets(4, 4, 4, 4),
+			0, 0
+		);
+		
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
+		
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.weightx = 1.0;
+		c.weighty = 0.0;
+		c.fill = GridBagConstraints.BOTH;
+		getContentPane().add(tabbedPane, c);
+		
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
+		
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.weightx = 1.0;
+		c.weighty = 1.0;
+		c.fill = GridBagConstraints.BOTH;
+		getContentPane().add(scrollPane, c);
+
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
+		
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.weightx = 0.0;
+		c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.CENTER;
+		getContentPane().add(pdfButton, c);
+
+		setVisible(true);
+		
+		log("Version: " + GdiPdf.VERSION);
+		
+		loadSettings();
+		assignmentNameListener.changedUpdate(null);
+	}
+	
+	private JPanel createBasicPanel(String inputDir, String outputDir) {
+		JPanel panel = new JPanel();
+		panel.setPreferredSize(getSize());
+		panel.setLayout(new GridBagLayout());
+		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
 		JLabel inDirLabel = new JLabel("Aufgaben-Verzeichnis:");
 		
@@ -84,27 +150,11 @@ class GdiPdfGui extends JFrame {
 		
 		JButton outDirBrowseButton = new JButton(outDirBrowseAction);
 		
-		JLabel outFileLabel = new JLabel("Name der Ausgabe-Datei:");
-		outFileTextField = new JTextField();
-		outFileTextField.setText(Common.DEFAULT_OUTPUT_FILENAME_PATTERN);
-		Dimension outFileSize = outDirSize;
-		outFileTextField.setPreferredSize(outFileSize);
-		
-		outFileLabel.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
-		outFileTextField.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
-		
-		JButton outFileDefaultButton = new JButton(outFileDefaultAction);
-		
 		JLabel assignmentLabel = new JLabel("Name der Aufgabe:");
 		assignmentNameTextField = new JTextField();
 		assignmentNameTextField.setPreferredSize(inDirSize);
 		
 		assignmentNameAutoCheckBox = new JCheckBox("Auto", true);
-		
-		JLabel styleLabel = new JLabel("PDF-Stil:");
-		Vector<PdfStyle> styles = new Vector<>();
-		styles.addAll(Common.getPdfStyles());
-		styleBox = new JComboBox<PdfStyle>(styles);
 		
 		lineNumberCheckbox = new JCheckBox("Zeilennummern");
 		lineNumberCheckbox.setMnemonic('Z');
@@ -113,26 +163,21 @@ class GdiPdfGui extends JFrame {
 		dontAskCheckbox = new JCheckBox("Existierende Dateien ohne Nachfrage überschreiben");
 		dontAskCheckbox.setMnemonic('E');
 		
-		logTextArea = new JTextArea();
-		logTextArea.setLineWrap(true);
-		logTextArea.setWrapStyleWord(true);
-		logTextArea.setEditable(false);
-		logTextArea.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-		JScrollPane scrollPane = new JScrollPane(logTextArea); 
-		scrollPane.setPreferredSize(getSize());
-
-		pdfButton = new JButton(pdfAction);
-
+		JLabel styleLabel = new JLabel("PDF-Stil:");
+		Vector<PdfStyle> styles = new Vector<>();
+		styles.addAll(Common.getPdfStyles());
+		styleBox = new JComboBox<PdfStyle>(styles);
+		
 		JPanel stylePanel = new JPanel();
 		stylePanel.add(styleBox);
 		stylePanel.add(lineNumberCheckbox);
 		
 		GridBagConstraints c = new GridBagConstraints(
-				0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START,
-				GridBagConstraints.NONE, new Insets(4, 4, 4, 4),
-				0, 0
+			0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START,
+			GridBagConstraints.NONE, new Insets(4, 4, 4, 4),
+			0, 0
 		);
-
+		
 		//----------------------------------
 		panel.add(inDirLabel, c);
 		
@@ -170,26 +215,6 @@ class GdiPdfGui extends JFrame {
 		c.weightx = 0.0;
 		panel.add(outDirBrowseButton, c);
 		
-		//----------------------------------
-		c.gridx = 0;
-		c.gridy++;
-		
-		panel.add(outFileLabel, c);
-		
-		c.gridx++;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.weightx = 1.0;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		panel.add(outFileTextField, c);
-
-		c.gridx++;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0.0;
-		panel.add(outFileDefaultButton, c);
-
 		//----------------------------------
 		c.gridx = 0;
 		c.gridy++;
@@ -232,35 +257,87 @@ class GdiPdfGui extends JFrame {
 		c.gridwidth = 3;
 		panel.add(dontAskCheckbox, c);
 		
+		return panel;
+	}
+	
+	private JPanel createAdvancedPanel() {
+		JPanel panel = new JPanel();
+		panel.setPreferredSize(getSize());
+		panel.setLayout(new GridBagLayout());
+		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		
+		JLabel outFileLabel = new JLabel("Name der Ausgabe-Datei:");
+		outFileTextField = new JTextField();
+		outFileTextField.setText(Common.DEFAULT_OUTPUT_FILENAME_PATTERN);
+		Dimension outFileSize = outFileTextField.getPreferredSize();
+		outFileSize.width = 250;
+		outFileTextField.setPreferredSize(outFileSize);
+		
+		JButton outFileDefaultButton = new JButton(outFileDefaultAction);
+		
+		outFileLabel.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
+		outFileTextField.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
+		
+		JLabel submissionsLabel = new JLabel("Nur folgende Abgaben konvertieren (eine Submission-ID pro Zeile):");
+		
+		submissionsTextArea = new JTextArea();
+		submissionsTextArea.setLineWrap(true);
+		submissionsTextArea.setWrapStyleWord(true);
+		submissionsTextArea.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		JScrollPane scrollPane = new JScrollPane(submissionsTextArea); 
+		scrollPane.setPreferredSize(getSize());
+		
+		GridBagConstraints c = new GridBagConstraints(
+			0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START,
+			GridBagConstraints.NONE, new Insets(4, 4, 4, 4),
+			0, 0
+		);
+		
 		//----------------------------------
 		c.gridx = 0;
 		c.gridy++;
 		
+		panel.add(outFileLabel, c);
+		
+		c.gridx++;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weightx = 1.0;
+		c.weighty = 0.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		panel.add(outFileTextField, c);
+		
+		c.gridx++;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0.0;
+		c.weighty = 0.0;
+		panel.add(outFileDefaultButton, c);
+		
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
 		c.gridwidth = 3;
 		c.gridheight = 1;
+		c.weightx = 0.0;
+		c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		
+		panel.add(submissionsLabel, c);
+
+		c.gridx = 0;
+		c.gridy++;
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.weightx = 1.0;
 		c.weighty = 1.0;
 		c.fill = GridBagConstraints.BOTH;
 		panel.add(scrollPane, c);
-
-		//----------------------------------
-		c.gridx = 0;
-		c.gridy++;
 		
-		c.gridwidth = 3;
-		c.gridheight = 1;
-		c.weighty = 0.0;
-		c.fill = GridBagConstraints.NONE;
-		c.anchor = GridBagConstraints.CENTER;
-		panel.add(pdfButton, c);
-
-		setVisible(true);
-		
-		log("Version: " + GdiPdf.VERSION);
-		
-		loadSettings();
-		assignmentNameListener.changedUpdate(null);
+		return panel;
 	}
-
+	
 	private DocumentListener assignmentNameListener = new DocumentListener() {
 		private void update() {
 			if (assignmentNameAutoCheckBox.isSelected()) {
@@ -571,6 +648,7 @@ class GdiPdfGui extends JFrame {
 				}
 			}
 		}
+		outFileTextField.setText(Preferences.userNodeForPackage(GdiPdf.class).get("output_filename_pattern", Common.DEFAULT_OUTPUT_FILENAME_PATTERN));
 	}
 	
 	private void saveSettings() {
@@ -578,5 +656,6 @@ class GdiPdfGui extends JFrame {
 		Preferences.userNodeForPackage(GdiPdf.class).putBoolean("confirm_overwrite", !dontAskCheckbox.isSelected());
 		Preferences.userNodeForPackage(GdiPdf.class).putBoolean("line_numbers", lineNumberCheckbox.isSelected());
 		Preferences.userNodeForPackage(GdiPdf.class).put("pdf_style", styleBox.getSelectedItem().getClass().getCanonicalName());
+		Preferences.userNodeForPackage(GdiPdf.class).put("output_filename_pattern", outFileTextField.getText().trim());
 	}
 }
