@@ -7,7 +7,12 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.prefs.Preferences;
 
@@ -480,7 +485,16 @@ class GdiPdfGui extends JFrame {
 							String assignmentNameManual = assignmentNameTextField.getText().trim();
 							String assignmentName = assignmentNameManual.isEmpty() ? assignmentNameAuto : assignmentNameManual;
 							
-							convertToPdf(inDir, outDir, outFilePattern, assignmentName, delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected());
+							List<String> submissionIds = new ArrayList<>();
+							for (String line : submissionsTextArea.getText().split("\n")) {
+								line = line.trim();
+								if (line.isEmpty()) {
+									continue;
+								}
+								submissionIds.add(line.split("\\s")[0]);
+							}
+							
+							convertToPdf(inDir, outDir, outFilePattern, assignmentName, delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected(), submissionIds);
 						}
 						catch (final Throwable e) {
 							e.printStackTrace();
@@ -542,14 +556,32 @@ class GdiPdfGui extends JFrame {
 		);
 
 	}
-
+	
+	/**
+	 * @param assignmentDir
+	 *   directory with the assignment (not the whole exercise sheet)
+	 * @param outputDir
+	 *   base output directory
+	 * @param outputFilePattern
+	 *   the output file name, can use the variables
+	 *   ${filename}, ${basename}, ${extension}
+	 * @param assignmentName
+	 *   the assignment name to put in the PDF files
+	 * @param delEmpty
+	 *   delete empty directories
+	 * @param dontAsk
+	 *   overwrite without confirmation
+	 * @param submissionIds
+	 *   if not null and not empty, process only these submissions
+	 */
 	private void convertToPdf(
 		File assignmentDir,
 		File outputDir,
 		String outputFilePattern,
 		String assignmentName,
 		boolean delEmpty,
-		boolean dontAsk
+		boolean dontAsk,
+		Collection<String> submissionIds
 	) throws IOException, DocumentException {
 		if (!assignmentDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", assignmentDir.toString()));
@@ -559,8 +591,13 @@ class GdiPdfGui extends JFrame {
 		pdfStyle.setLineNumbers(lineNumberCheckbox.isSelected());
 		
 		log("Aufgabenname: " + assignmentName);
-		log("PDF-Stil: " + pdfStyle);	
-
+		log("PDF-Stil: " + pdfStyle);
+		
+		Set<String> openSubmissionIds = null;
+		if (submissionIds != null && !submissionIds.isEmpty()) {
+			openSubmissionIds = new HashSet<String>(submissionIds);
+		}
+		
 		int numConverted = 0;
 		
 		studentLoop:
@@ -568,9 +605,25 @@ class GdiPdfGui extends JFrame {
 			if (!studentDir.isDirectory()) {
 				continue;
 			}
-
-			String studentName = Common.getStudentName(studentDir); 
-			log(studentName);
+			
+			if (!Common.isValidStudentDir(studentDir)) {
+				log("Ungültiges Verzeichnis: " + studentDir);
+				continue;
+			}
+			
+			String studentName = Common.getStudentName(studentDir);
+			String submissionId = Common.getSubmissionId(studentDir);
+			
+			log(submissionId);
+			
+			if (openSubmissionIds != null) {
+				if (!openSubmissionIds.contains(submissionId)) {
+					continue;
+				}
+				openSubmissionIds.remove(submissionId);
+			}
+			
+			log(String.format("%s (%s)", studentName, submissionId));
 
 			File[] fileList = studentDir.listFiles();
 			if (fileList.length == 0 && delEmpty) {
@@ -630,6 +683,16 @@ class GdiPdfGui extends JFrame {
 				
 				numConverted++;
 			}
+		}
+		
+		if (openSubmissionIds != null && !openSubmissionIds.isEmpty()) {
+			log(String.format("Warnung! Die folgenden Abgaben (Submission-IDs) wurden nicht gefunden: %s", openSubmissionIds.toString()));
+			JOptionPane.showMessageDialog(
+				GdiPdfGui.this,
+				String.format("Die folgenden Abgaben (Submission-IDs) wurden nicht gefunden:\n%s", openSubmissionIds.toString()),
+				"Warnung",
+				JOptionPane.WARNING_MESSAGE
+			);
 		}
 
 		log(String.format("Fertig. Es wurden %d PDF-Dateien erzeugt.", numConverted));

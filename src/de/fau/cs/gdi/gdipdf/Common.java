@@ -107,7 +107,20 @@ public class Common {
 	
 		return sb.toString();
 	}
+	
+	public static boolean isValidStudentDir(File studentDir) {
+		String[] tokens = studentDir.getName().split("_");
+		return (
+			tokens.length > 1 &&
+			!tokens[tokens.length-1].trim().isEmpty()
+		);
+	}
 
+	public static String getSubmissionId(File studentDir) {
+		String[] tokens = studentDir.getName().split("_");
+		return tokens[tokens.length-1];
+	}
+	
 	public static String getStudentName(File studentDir) {
 		List<String> tokens = new ArrayList<String>(Arrays.asList(studentDir.getName().split("_")));
 		tokens.remove(tokens.size() - 1);
