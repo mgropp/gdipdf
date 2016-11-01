@@ -614,8 +614,6 @@ class GdiPdfGui extends JFrame {
 			String studentName = Common.getStudentName(studentDir);
 			String submissionId = Common.getSubmissionId(studentDir);
 			
-			log(submissionId);
-			
 			if (openSubmissionIds != null) {
 				if (!openSubmissionIds.contains(submissionId)) {
 					continue;

@@ -48,6 +48,9 @@ public class GdiPdf {
 		@Option(name="--output-file-pattern", usage="Ausgabe-Dateiname mit Variablen ${basename}, ${extension}, ${filename} (Standard: " + Common.DEFAULT_OUTPUT_FILENAME_PATTERN + ")")
 		public String outputFilePattern;
 		
+		@Option(name="--submissions", usage="Nur Abgaben mit Submission-IDs aus dieser Datei (eine pro Zeile) konvertieren")
+		public String submissions;
+		
 		@Argument
 		public List<String> assignmentDirs = null;
 	}

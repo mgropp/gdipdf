@@ -1,10 +1,18 @@
 package de.fau.cs.gdi.gdipdf;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.itextpdf.text.DocumentException;
 
@@ -58,7 +66,8 @@ class GdiPdfCli {
 		String assignmentName,
 		PdfStyle pdfStyle,
 		boolean delEmpty,
-		boolean dontAsk
+		boolean dontAsk,
+		Collection<String> submissionIds
 	) throws IOException, DocumentException {
 		if (!inputDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", inputDir.toString()));
@@ -66,7 +75,12 @@ class GdiPdfCli {
 		
 		log("Aufgabenname: " + assignmentName);
 		log("PDF-Stil: " + pdfStyle);	
-
+		
+		Set<String> openSubmissionIds = null;
+		if (submissionIds != null && !submissionIds.isEmpty()) {
+			openSubmissionIds = new HashSet<String>(submissionIds);
+		}
+		
 		int numConverted = 0;
 		
 		studentLoop:
@@ -74,10 +88,24 @@ class GdiPdfCli {
 			if (!studentDir.isDirectory()) {
 				continue;
 			}
-
-			String studentName = Common.getStudentName(studentDir); 
-			log(studentName);
-
+			
+			if (!Common.isValidStudentDir(studentDir)) {
+				log("Ungültiges Verzeichnis: " + studentDir);
+				continue;
+			}
+			
+			String studentName = Common.getStudentName(studentDir);
+			String submissionId = Common.getSubmissionId(studentDir);
+			
+			if (openSubmissionIds != null) {
+				if (!openSubmissionIds.contains(submissionId)) {
+					continue;
+				}
+				openSubmissionIds.remove(submissionId);
+			}
+			
+			log(String.format("%s (%s)", studentName, submissionId));
+			
 			File[] fileList = studentDir.listFiles();
 			if (fileList.length == 0 && delEmpty) {
 				log("Verzeichnis ist leer: Löschen.");
@@ -138,8 +166,28 @@ class GdiPdfCli {
 				numConverted++;
 			}
 		}
-
+		
+		if (openSubmissionIds != null && !openSubmissionIds.isEmpty()) {
+			log(String.format("Warnung! Die folgenden Abgaben (Submission-IDs) wurden nicht gefunden: %s", openSubmissionIds.toString()));
+		}
+		
 		log(String.format("Fertig. Es wurden %d PDF-Dateien erzeugt.", numConverted));
+	}
+	
+	private static List<String> loadSubmissionIds(String filename) throws FileNotFoundException, IOException {
+		List<String> submissionIds = new ArrayList<>();
+		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				line = line.trim();
+				if (line.isEmpty()) {
+					continue;
+				}
+				submissionIds.add(line.split("\\s")[0]);
+			}
+		}
+		
+		return submissionIds;
 	}
 	
 	public static void main(GdiPdf.Options opt) throws InstantiationException, IllegalAccessException, ClassNotFoundException, IOException, DocumentException {
@@ -171,6 +219,11 @@ class GdiPdfCli {
 			}
 		}
 		
+		List<String> submissionIds = null;
+		if (opt.submissions != null) {
+			submissionIds = loadSubmissionIds(opt.submissions);
+		}
+		
 		for (String assignmentDirName : opt.assignmentDirs) {
 			File assignmentDir = new File(assignmentDirName);
 			
@@ -179,7 +232,7 @@ class GdiPdfCli {
 				assignmentName = Common.getAssignmentName(assignmentDir);
 			}
 			
-			convertToPdf(assignmentDir, outputDir, opt.outputFilePattern, assignmentName, pdfStyle, opt.delEmptyDirs, opt.overwrite);
+			convertToPdf(assignmentDir, outputDir, opt.outputFilePattern, assignmentName, pdfStyle, opt.delEmptyDirs, opt.overwrite, submissionIds);
 		}
 	}
 }
