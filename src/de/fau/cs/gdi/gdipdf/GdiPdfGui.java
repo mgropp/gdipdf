@@ -6,7 +6,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -58,6 +60,7 @@ class GdiPdfGui extends JFrame {
 	private JCheckBox lineNumberCheckbox;
 	private JCheckBox delEmptyCheckbox;
 	private JCheckBox dontAskCheckbox;
+	private JCheckBox commentFilesCheckbox;
 	
 	public GdiPdfGui(String inputDir, String outputDir) {
 		setTitle("GdiPdf");
@@ -283,6 +286,9 @@ class GdiPdfGui extends JFrame {
 		outFileLabel.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
 		outFileTextField.setToolTipText("Variablen: ${basename}, ${extension}, ${filename}");
 		
+		commentFilesCheckbox = new JCheckBox("Kommentar-Dateien (comment) anlegen");
+		commentFilesCheckbox.setMnemonic('K');
+		
 		JLabel submissionsLabel = new JLabel("Nur folgende Abgaben konvertieren (eine Submission-ID pro Zeile):");
 		
 		submissionsTextArea = new JTextArea();
@@ -339,6 +345,15 @@ class GdiPdfGui extends JFrame {
 		c.weighty = 1.0;
 		c.fill = GridBagConstraints.BOTH;
 		panel.add(scrollPane, c);
+		
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
+		c.weightx = 1.0;
+		c.weighty = 0.0;
+		
+		c.gridwidth = 3;
+		panel.add(commentFilesCheckbox, c);
 		
 		return panel;
 	}
@@ -494,7 +509,13 @@ class GdiPdfGui extends JFrame {
 								submissionIds.add(line.split("\\s")[0]);
 							}
 							
-							convertToPdf(inDir, outDir, outFilePattern, assignmentName, delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected(), submissionIds);
+							convertToPdf(
+								inDir, outDir,
+								outFilePattern, assignmentName,
+								delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected(),
+								submissionIds,
+								commentFilesCheckbox.isSelected()
+							);
 						}
 						catch (final Throwable e) {
 							e.printStackTrace();
@@ -581,7 +602,8 @@ class GdiPdfGui extends JFrame {
 		String assignmentName,
 		boolean delEmpty,
 		boolean dontAsk,
-		Collection<String> submissionIds
+		Collection<String> submissionIds,
+		boolean createCommentFiles
 	) throws IOException, DocumentException {
 		if (!assignmentDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", assignmentDir.toString()));
@@ -681,6 +703,10 @@ class GdiPdfGui extends JFrame {
 				
 				numConverted++;
 			}
+			
+			if (createCommentFiles) {
+				createCommentFile(studentDir);
+			}
 		}
 		
 		if (openSubmissionIds != null && !openSubmissionIds.isEmpty()) {
@@ -694,6 +720,22 @@ class GdiPdfGui extends JFrame {
 		}
 
 		log(String.format("Fertig. Es wurden %d PDF-Dateien erzeugt.", numConverted));
+	}
+	
+	private void createCommentFile(File directory) {
+		File commentFile = new File(directory, "comment");
+		if (commentFile.exists()) {
+			log(String.format("Kommentar-Datei existiert bereits in %s", directory));
+			return;
+		}
+		
+		try (PrintWriter writer = new PrintWriter(new FileWriter(commentFile))) {
+			writer.println("Score: ");
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			log(String.format("Kommentar-Datei in %s konnte nicht angelegt werden: %s %s", directory, e.getClass().getSimpleName(), e.getMessage()));
+		}
 	}
 
 	private void loadSettings() {
@@ -710,6 +752,7 @@ class GdiPdfGui extends JFrame {
 			}
 		}
 		outFileTextField.setText(Preferences.userNodeForPackage(GdiPdf.class).get("output_filename_pattern", Common.DEFAULT_OUTPUT_FILENAME_PATTERN));
+		commentFilesCheckbox.setSelected(Preferences.userNodeForPackage(GdiPdf.class).getBoolean("create_comment_files", false));
 	}
 	
 	private void saveSettings() {
@@ -718,5 +761,6 @@ class GdiPdfGui extends JFrame {
 		Preferences.userNodeForPackage(GdiPdf.class).putBoolean("line_numbers", lineNumberCheckbox.isSelected());
 		Preferences.userNodeForPackage(GdiPdf.class).put("pdf_style", styleBox.getSelectedItem().getClass().getCanonicalName());
 		Preferences.userNodeForPackage(GdiPdf.class).put("output_filename_pattern", outFileTextField.getText().trim());
+		Preferences.userNodeForPackage(GdiPdf.class).putBoolean("create_comment_files", commentFilesCheckbox.isSelected());
 	}
 }
