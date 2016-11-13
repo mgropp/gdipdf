@@ -14,10 +14,10 @@ import org.kohsuke.args4j.Option;
 /**
  * GdiPdf
  * @author Martin Gropp
- * @version $buildinfo: 2016-11-07 14:29 gropp$
+ * @version $buildinfo: 2016-11-13 11:12 martin$
  */
 public class GdiPdf {
-	private static final String BUILDINFO = "$buildinfo: 2016-11-07 14:29 gropp$";
+	private static final String BUILDINFO = "$buildinfo: 2016-11-13 11:12 martin$";
 	public static final String VERSION = BUILDINFO.substring(BUILDINFO.indexOf(' ')+1, BUILDINFO.length()-1);
 	
 	public static class Options {

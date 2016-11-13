@@ -705,7 +705,11 @@ class GdiPdfGui extends JFrame {
 			}
 			
 			if (createCommentFiles) {
-				createCommentFile(studentDir);
+				createCommentFile(
+					Common.getOutputDir(
+						outputDir, assignmentDir.getName(), studentDir.getName()
+					)
+				);
 			}
 		}
 		

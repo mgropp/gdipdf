@@ -155,9 +155,21 @@ public class Common {
 	}
 	*/
 	
+	public static File getOutputDir(File baseOutputDir, String assignmentDirName, String studentDirName) throws IOException {
+		File outputDir = new File(new File(baseOutputDir, assignmentDirName), studentDirName);
+		
+		if (!outputDir.isDirectory()) {
+			if (!outputDir.mkdirs()) {
+				throw new IOException(String.format("Ausgabe-Verzeichnis '%s' konnte nicht angelegt werden.", outputDir.getCanonicalPath()));
+			}
+		}
+		
+		return outputDir;
+	}
+	
 	public static File getPdfFilename(File inputFile, File outputDir, String outputFilePattern) throws IOException {
-		String studentName = getStudentDirNameFromInputFile(inputFile);
-		String assignmentName = getAssignmentDirNameFromInputFile(inputFile);
+		String studentDirName = getStudentDirNameFromInputFile(inputFile);
+		String assignmentDirName = getAssignmentDirNameFromInputFile(inputFile);
 
 		String filename = inputFile.getName();
 		
@@ -177,12 +189,7 @@ public class Common {
 		StrSubstitutor sub = new StrSubstitutor(variables);
 		String outputFileName = sub.replace(outputFilePattern);
 		
-		File outputDirForFile = new File(new File(outputDir, assignmentName), studentName);
-		if (!outputDirForFile.isDirectory()) {
-			if (!outputDirForFile.mkdirs()) {
-				throw new IOException(String.format("Ausgabe-Verzeichnis '%s' konnte nicht angelegt werden.", outputDirForFile.getCanonicalPath()));
-			}
-		}
+		File outputDirForFile = getOutputDir(outputDir, assignmentDirName, studentDirName);
 		
 		return new File(outputDirForFile, outputFileName);
 	}
