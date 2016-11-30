@@ -545,13 +545,14 @@ class GdiPdfGui extends JFrame {
 								submissionIds.add(line.split("\\s")[0]);
 							}
 							
+							String defaultComment = defaultCommentTextField.getText().trim();
 							convertToPdf(
 								inDir, outDir,
 								outFilePattern, assignmentName,
 								delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected(),
 								submissionIds,
 								commentFilesCheckbox.isSelected(),
-								defaultCommentTextField.getText().trim()
+								defaultComment.isEmpty() ? null : Arrays.asList(defaultComment)
 							);
 						}
 						catch (final Throwable e) {
@@ -641,7 +642,7 @@ class GdiPdfGui extends JFrame {
 		boolean dontAsk,
 		Collection<String> submissionIds,
 		boolean createCommentFiles,
-		String defaultComment
+		List<String> defaultComment
 	) throws IOException, DocumentException {
 		if (!assignmentDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", assignmentDir.toString()));
@@ -747,7 +748,7 @@ class GdiPdfGui extends JFrame {
 					Common.getOutputDir(
 						outputDir, assignmentDir.getName(), studentDir.getName()
 					),
-					Arrays.asList(defaultCommentTextField.getText().trim())
+					defaultComment
 				);
 			}
 		}
