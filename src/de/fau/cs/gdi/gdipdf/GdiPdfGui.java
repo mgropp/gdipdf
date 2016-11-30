@@ -5,11 +5,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,6 +53,7 @@ class GdiPdfGui extends JFrame {
 	private JTextField inDirTextField;
 	private JTextField outDirTextField;
 	private JTextField outFileTextField;
+	private JTextField defaultCommentTextField;
 	private JTextField assignmentNameTextField;
 	private JCheckBox assignmentNameAutoCheckBox;
 	private JTextArea logTextArea;
@@ -288,6 +291,23 @@ class GdiPdfGui extends JFrame {
 		
 		commentFilesCheckbox = new JCheckBox("Kommentar-Dateien (comment) anlegen");
 		commentFilesCheckbox.setMnemonic('K');
+		commentFilesCheckbox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				if (defaultCommentTextField != null) {
+					defaultCommentTextField.setEnabled(commentFilesCheckbox.isSelected());
+				}
+			}
+		});
+		
+		JLabel defaultCommentLabel = new JLabel("Standard-Kommentar:");
+		defaultCommentTextField = new JTextField();
+		Dimension defaultCommentSize = outFileTextField.getPreferredSize();
+		defaultCommentSize.width = 250;
+		defaultCommentTextField.setPreferredSize(defaultCommentSize);
+		
+		defaultCommentLabel.setToolTipText("Diesen Standard-Kommentar in die Kommentar-Datei eintragen. Leer lassen, um nichts einzutragen.");
+		defaultCommentTextField.setToolTipText("Diesen Standard-Kommentar in die Kommentar-Datei eintragen. Leer lassen, um nichts einzutragen.");
 		
 		JLabel submissionsLabel = new JLabel("Nur folgende Abgaben konvertieren (eine Submission-ID pro Zeile):");
 		
@@ -351,9 +371,25 @@ class GdiPdfGui extends JFrame {
 		c.gridy++;
 		c.weightx = 1.0;
 		c.weighty = 0.0;
-		
 		c.gridwidth = 3;
 		panel.add(commentFilesCheckbox, c);
+		
+		//----------------------------------
+		c.gridx = 0;
+		c.gridy++;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weightx = 0.0;
+		c.weighty = 0.0;
+		c.fill = GridBagConstraints.NONE;
+		panel.add(defaultCommentLabel, c);
+		
+		c.gridx++;
+		c.weightx = 1.0;
+		c.weighty = 0.0;
+		c.gridwidth = 2;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		panel.add(defaultCommentTextField, c);
 		
 		return panel;
 	}
@@ -514,7 +550,8 @@ class GdiPdfGui extends JFrame {
 								outFilePattern, assignmentName,
 								delEmptyCheckbox.isSelected(), dontAskCheckbox.isSelected(),
 								submissionIds,
-								commentFilesCheckbox.isSelected()
+								commentFilesCheckbox.isSelected(),
+								defaultCommentTextField.getText().trim()
 							);
 						}
 						catch (final Throwable e) {
@@ -603,7 +640,8 @@ class GdiPdfGui extends JFrame {
 		boolean delEmpty,
 		boolean dontAsk,
 		Collection<String> submissionIds,
-		boolean createCommentFiles
+		boolean createCommentFiles,
+		String defaultComment
 	) throws IOException, DocumentException {
 		if (!assignmentDir.isDirectory()) {
 			throw new IllegalArgumentException(String.format("'%s' ist kein Verzeichnis!", assignmentDir.toString()));
@@ -708,7 +746,8 @@ class GdiPdfGui extends JFrame {
 				createCommentFile(
 					Common.getOutputDir(
 						outputDir, assignmentDir.getName(), studentDir.getName()
-					)
+					),
+					Arrays.asList(defaultCommentTextField.getText().trim())
 				);
 			}
 		}
@@ -726,7 +765,7 @@ class GdiPdfGui extends JFrame {
 		log(String.format("Fertig. Es wurden %d PDF-Dateien erzeugt.", numConverted));
 	}
 	
-	private void createCommentFile(File directory) {
+	private void createCommentFile(File directory, List<String> comments) {
 		File commentFile = new File(directory, "comment");
 		if (commentFile.exists()) {
 			log(String.format("Kommentar-Datei existiert bereits in %s", directory));
@@ -735,6 +774,11 @@ class GdiPdfGui extends JFrame {
 		
 		try (PrintWriter writer = new PrintWriter(new FileWriter(commentFile))) {
 			writer.println("Score: ");
+			if (comments != null) {
+				for (String comment : comments) {
+					writer.println(comment);
+				}
+			}
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -757,6 +801,8 @@ class GdiPdfGui extends JFrame {
 		}
 		outFileTextField.setText(Preferences.userNodeForPackage(GdiPdf.class).get("output_filename_pattern", Common.DEFAULT_OUTPUT_FILENAME_PATTERN));
 		commentFilesCheckbox.setSelected(Preferences.userNodeForPackage(GdiPdf.class).getBoolean("create_comment_files", false));
+		defaultCommentTextField.setEnabled(commentFilesCheckbox.isSelected());
+		defaultCommentTextField.setText(Preferences.userNodeForPackage(GdiPdf.class).get("default_comment", ""));
 	}
 	
 	private void saveSettings() {
@@ -766,5 +812,6 @@ class GdiPdfGui extends JFrame {
 		Preferences.userNodeForPackage(GdiPdf.class).put("pdf_style", styleBox.getSelectedItem().getClass().getCanonicalName());
 		Preferences.userNodeForPackage(GdiPdf.class).put("output_filename_pattern", outFileTextField.getText().trim());
 		Preferences.userNodeForPackage(GdiPdf.class).putBoolean("create_comment_files", commentFilesCheckbox.isSelected());
+		Preferences.userNodeForPackage(GdiPdf.class).put("default_comment", defaultCommentTextField.getText().trim());
 	}
 }
