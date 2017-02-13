@@ -7,9 +7,11 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -773,7 +775,7 @@ class GdiPdfGui extends JFrame {
 			return;
 		}
 		
-		try (PrintWriter writer = new PrintWriter(new FileWriter(commentFile))) {
+		try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(commentFile), Charset.forName("UTF-8")))) {
 			writer.println("Score: ");
 			if (comments != null) {
 				for (String comment : comments) {
