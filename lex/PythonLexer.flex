@@ -14,7 +14,7 @@ import java.io.IOException;
 
 %%
 
-%class JavaLexer
+%class PythonLexer
 %extends Lexer
 
 %unicode
@@ -32,29 +32,29 @@ import java.io.IOException;
 	public byte getStartState() {
 		return YYINITIAL+1;
 	}
-	
+
 	public byte getCurrentState() {
 		return (byte) (yystate()+1);
 	}
-	
+
 	public void setState(byte newState) {
 		yybegin(newState-1);
 	}
-	
+
 	public byte getNextToken() throws IOException {
 		return (byte) yylex();
 	}
-	
+
 	public int getTokenLength() {
 		return yylength();
 	}
-	
+
 	public void setReader(Reader r) {
 		this.zzReader = r;
 		this.yyreset(r);
 	}
-	
-	public JavaLexer() {
+
+	public PythonLexer() {
 	}
 %}
 
@@ -74,24 +74,21 @@ SimpleTypeIdentifier = [A-Z][:jletterdigit:]*
 
 /* int literals */
 
-DecLiteral = 0 | [1-9][0-9]* [lL]?
+DecLiteral = [0-9](_?[0-9]+)*
+HexLiteral = 0 [xX] 0* [0-9a-fA-F](_?[0-9a-fA-F]+)*
+OctLiteral = 0 [oO] [0-7](_?[0-7]+)*
+BinLiteral = 0 [bB] [01](_?[01]+)*
 
-HexLiteral    = 0 [xX] 0* {HexDigit}* [lL]?
-HexDigit      = [0-9a-fA-F]
-
-OctLiteral    = 0+ {OctDigit}* [lL]?
-OctDigit          = [0-7]
-	
 /* float literals */
 
 FloatLiteral  = ({FLit1}|{FLit2}|{FLit3}|{FLit4}) ([fF]|[dD])?
 
-FLit1 = [0-9]+ \. [0-9]* {Exponent}?
-FLit2 = \. [0-9]+ {Exponent}?
-FLit3 = [0-9]+ {Exponent}
-FLit4 = [0-9]+ {Exponent}?
+FLit1 = [0-9](_?[0-9]+)* \. [0-9]?(_?[0-9]+)* {Exponent}?
+FLit2 = \. [0-9](_?[0-9]+)* {Exponent}?
+FLit3 = [0-9](_?[0-9]+)* {Exponent}
+FLit4 = [0-9](_?[0-9]+)* {Exponent}?
 
-Exponent = [eE] [+\-]? [0-9]+
+Exponent = [eE] [+\-]? [0-9_]+
 
 %state IN_COMMENT, IN_JAVA_DOC_COMMENT, IN_TUTOR_COMMENT
 
@@ -100,61 +97,58 @@ Exponent = [eE] [+\-]? [0-9]+
 <YYINITIAL> {
 
   /* keywords */
-  "abstract" |
+  "and" |
+  "as" |
+  "assert" |
+  "async" |
+  "await" |
   "break" |
-  "case" |
-  "catch" |
   "class" |
-  "const" |
   "continue" |
-  "do" |
+  "def" |
+  "del" |
+  "elif" |
   "else" |
-  "extends" |
-  "final" |
+  "except" |
   "finally" |
   "for" |
-  "default" |
-  "implements" |
-  "import" |
-  "instanceof" |
-  "interface" |
-  "native" |
-  "new" |
-  "goto" |
+  "from" |
+  "global" |
   "if" |
-  "public" |
-  "super" |
-  "switch" |
-  "synchronized" |
-  "package" |
-  "private" |
-  "protected" |
-  "transient" |
+  "import" |
+  "in" |
+  "is" |
+  "lambda" |
+  "nonlocal" |
+  "not" |
+  "or" |
+  "pass" |
+  "raise" |
   "return" |
-  "static" |
-  "while" |
-  "this" |
-  "throw" |
-  "throws" |
   "try" |
-  "volatile" |
-  "strictfp" |
-  "assert" { return KEYWORD_STYLE; }
+  "while" |
+  "with" |
+  "yield" { return KEYWORD_STYLE; }
 
-  "boolean" |
-  "byte" |
-  "char" |
-  "double" |
+  "str" |
   "int" |
-  "long" |
   "float" |
-  "short" |
-  "void" { return TYPE_STYLE; }
+  "complex" |
+  "list" |
+  "tuple" |
+  "range" |
+  "dict" |
+  "set" |
+  "frozenset" |
+  "bool" |
+  "bytes" |
+  "bytearray" |
+  "memoryview" { return TYPE_STYLE; }
 
   /* literals */
-  "true" |
+  "True" |
   "false" |
-  "null" |
+  "None" |
 
   (\" ( [^\"\n\\] | \\[^\n] )* (\n | \\\n | \")) |
   (\' ( [^\'\n\\] | \\[^\n] )* (\n | \\\n | \')) |
@@ -162,10 +156,8 @@ Exponent = [eE] [+\-]? [0-9]+
   {DecLiteral} |
   {HexLiteral} |
   {OctLiteral} |
+  {FloatLiteral} { return LITERAL_STYLE; }
 
-  {FloatLiteral}
-	{ return LITERAL_STYLE; }
-  
   /* separators */
   "(" |
   ")" |
@@ -175,8 +167,9 @@ Exponent = [eE] [+\-]? [0-9]+
   "]" |
   ";" |
   "," |
-  "."                          { return SEPARATOR_STYLE; }
-  
+  ":" |
+  "." { return SEPARATOR_STYLE; }
+
   /* operators */
   "=" |
   ">" |
@@ -203,69 +196,10 @@ Exponent = [eE] [+\-]? [0-9]+
   {WhiteSpace}                   { return PLAIN_STYLE; }
 
 
-
-// single line comment
-
-  "//" [^\n]* \n |
-
-// short comment
-
-  "/**/"   	{ return COMMENT_STYLE; }
-  
-// comment start
-  
-  "/**"     { yybegin(IN_JAVA_DOC_COMMENT); return JAVADOC_COMMENT_STYLE;}
-  "/*!"     { yybegin(IN_TUTOR_COMMENT); return TUTOR_COMMENT_STYLE;}
-  "/*"      { yybegin(IN_COMMENT);  return COMMENT_STYLE;}
-
-}
-
-
-// normal comment mode
-
-<IN_COMMENT> {
-  
-
-  // comment unterminated
-
-  ([^\n*]|\*+[^\n*/])* (\n | \*+\n)  { return COMMENT_STYLE; }
-
-  // comment terminated
-
-  ([^\n*]|\*+[^\n*/])* \*+ "/"  { yybegin(YYINITIAL); return COMMENT_STYLE; }
-  
-}
-
-// doc comment mode
-
-<IN_JAVA_DOC_COMMENT> {
-  
-  // comment unterminated
-
-  .|\n  { return JAVADOC_COMMENT_STYLE; }
-
-  // comment terminated
-
-  \* "/"  { yybegin(YYINITIAL); return JAVADOC_COMMENT_STYLE; }
-
-	
-  "@" {Identifier} { return JAVADOC_TAG_STYLE;  }
-	
-}
-
-// tutor comment mode
-<IN_TUTOR_COMMENT> {
-
-  // comment unterminated
-
-  ([^\n*]|\*+[^\n*/])* (\n | \*+\n)  { return TUTOR_COMMENT_STYLE; }
-
-  // comment terminated
-
-  ([^\n*]|\*+[^\n*/])* \*+ "/"  { yybegin(YYINITIAL); return TUTOR_COMMENT_STYLE; }
-  
+  // comments
+  "#*" [^\n]* \n { return TUTOR_COMMENT_STYLE; }
+  "#" [^*] [^\n]* \n { return COMMENT_STYLE; }
 }
 
 /* error fallback */
-
 [^]|\n                             { return PLAIN_STYLE; }

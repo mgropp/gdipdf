@@ -1,7 +1,5 @@
 package de.fau.cs.gdi.gdipdf;
 
-import de.fau.cs.gdi.gdipdf.JavaLexer;
-
 /**
  * TokenStyle
  * @author Martin Gropp
@@ -13,7 +11,7 @@ public enum TokenStyle {
 	OPERATOR_STYLE,
 	SEPARATOR_STYLE,
 	LITERAL_STYLE,
-	JAVA_COMMENT_STYLE,
+	COMMENT_STYLE,
 	JAVADOC_COMMENT_STYLE,
 	JAVADOC_TAG_STYLE,
 	LINE_NUMBER_STYLE,
@@ -21,25 +19,25 @@ public enum TokenStyle {
 
 	public static TokenStyle fromNumber(byte number) {
 		switch (number) {
-		case JavaLexer.PLAIN_STYLE:
+		case Lexer.PLAIN_STYLE:
 			return PLAIN_STYLE;
-		case JavaLexer.KEYWORD_STYLE:
+		case Lexer.KEYWORD_STYLE:
 			return KEYWORD_STYLE;
-		case JavaLexer.TYPE_STYLE:
+		case Lexer.TYPE_STYLE:
 			return TYPE_STYLE;
-		case JavaLexer.OPERATOR_STYLE:
+		case Lexer.OPERATOR_STYLE:
 			return OPERATOR_STYLE;
-		case JavaLexer.SEPARATOR_STYLE:
+		case Lexer.SEPARATOR_STYLE:
 			return SEPARATOR_STYLE;
-		case JavaLexer.LITERAL_STYLE:
+		case Lexer.LITERAL_STYLE:
 			return LITERAL_STYLE;
-		case JavaLexer.JAVA_COMMENT_STYLE:
-			return JAVA_COMMENT_STYLE;
-		case JavaLexer.JAVADOC_COMMENT_STYLE:
+		case Lexer.COMMENT_STYLE:
+			return COMMENT_STYLE;
+		case Lexer.JAVADOC_COMMENT_STYLE:
 			return JAVADOC_COMMENT_STYLE;
-		case JavaLexer.JAVADOC_TAG_STYLE:
+		case Lexer.JAVADOC_TAG_STYLE:
 			return JAVADOC_TAG_STYLE;
-		case JavaLexer.TUTOR_COMMENT_STYLE:
+		case Lexer.TUTOR_COMMENT_STYLE:
 			return TUTOR_COMMENT_STYLE;
 		default:
 			throw new IllegalArgumentException();

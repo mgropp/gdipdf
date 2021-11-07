@@ -46,7 +46,17 @@ public class Processors {
 	 * @throws IOException
 	 * @throws DocumentException
 	 */
-	public static void convertFileToPdf(File inFile, File outFile, PdfStyle pdfStyle) throws IOException, DocumentException {
+	public static void convertJavaFileToPdf(File inFile, File outFile, PdfStyle pdfStyle) throws IOException, DocumentException {
+		JavaLexer lexer = new JavaLexer();
+		convertFileToPdf(inFile, outFile, pdfStyle, lexer);
+	}
+
+	public static void convertFileToPdf(
+		File inFile,
+		File outFile,
+		PdfStyle pdfStyle,
+		Lexer lexer
+	) throws IOException, DocumentException {
 		String lineNumberFormat = pdfStyle.getLineNumberFormat();
 		
 		CharsetDetector charsetDetector = new CharsetDetector();
@@ -65,7 +75,6 @@ public class Processors {
 		}
 		
 		try {
-			JavaLexer lexer = new JavaLexer();
 			lexer.setReader(trimmedReader);
 
 			Document document = new Document();
@@ -78,8 +87,7 @@ public class Processors {
 			document.addAuthor(System.getProperty("user.name"));
 			document.addCreator("GdiPdf (" + GdiPdf.VERSION + ")");
 			document.addCreationDate();
-			
-			
+
 			document.open();
 
 			float leading = pdfStyle.getLeading();
@@ -106,7 +114,7 @@ public class Processors {
 
 					emptyDocument = false;
 					String text = lexer.yytext();
-					
+
 					Chunk chunk = new Chunk();
 					if (leadingSpaces) {
 						chunk.setFont(pdfStyle.getFont(TokenStyle.PLAIN_STYLE));
@@ -202,11 +210,11 @@ public class Processors {
 						chunk = null;
 					}
 				}
-				
+
 				if (emptyDocument) {
 					paragraph = new Paragraph();
 					phrase = new Phrase();
-					phrase.add(new Chunk("(Leere Datei)", pdfStyle.getFont(TokenStyle.JAVA_COMMENT_STYLE)));
+					phrase.add(new Chunk("(Leere Datei)", pdfStyle.getFont(TokenStyle.COMMENT_STYLE)));
 					paragraph.add(phrase);
 					document.add(paragraph);
 				}

@@ -49,18 +49,18 @@ public class Common {
 				throw new RuntimeException(e);
 			}
 		}
-		
-		if (!ClassicStyle.class.equals(customClass)) {
-			pdfStyles.add(new ClassicStyle());
-		}
-		if (!ClassicStylePortrait.class.equals(customClass)) {
-			pdfStyles.add(new ClassicStylePortrait());
-		}
+
 		if (!SimpleStyle.class.equals(customClass)) {
 			pdfStyles.add(new SimpleStyle());
 		}
+		if (!ClassicStyle.class.equals(customClass)) {
+			pdfStyles.add(new ClassicStyle());
+		}
 		if (!SimpleStylePortrait.class.equals(customClass)) {
 			pdfStyles.add(new SimpleStylePortrait());
+		}
+		if (!ClassicStylePortrait.class.equals(customClass)) {
+			pdfStyles.add(new ClassicStylePortrait());
 		}
 	}
 	
@@ -122,7 +122,7 @@ public class Common {
 	}
 	
 	public static String getStudentName(File studentDir) {
-		List<String> tokens = new ArrayList<String>(Arrays.asList(studentDir.getName().split("_")));
+		List<String> tokens = new ArrayList<>(Arrays.asList(studentDir.getName().split("_")));
 		tokens.remove(tokens.size() - 1);
 	
 		StringBuilder sb = new StringBuilder();

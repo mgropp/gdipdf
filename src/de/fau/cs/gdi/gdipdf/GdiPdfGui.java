@@ -735,7 +735,7 @@ class GdiPdfGui extends JFrame {
 				pdfStyle.setAssignmentName(assignmentName);
 				
 				if (inFile.getName().endsWith(".java")) {
-					Processors.convertFileToPdf(inFile, outFile, pdfStyle);
+					Processors.convertJavaFileToPdf(inFile, outFile, pdfStyle);
 				} else if (inFile.getName().endsWith(".pdf")) {
 					Processors.decoratePdf(inFile, outFile, pdfStyle.asPortrait(), pdfStyle.asLandscape());
 				} else {

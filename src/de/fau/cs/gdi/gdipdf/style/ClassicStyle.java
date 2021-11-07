@@ -102,7 +102,7 @@ public class ClassicStyle extends PdfPageEventHelper implements PdfStyle {
 		case TYPE_STYLE:
 			return typeFont;
 
-		case JAVA_COMMENT_STYLE:
+		case COMMENT_STYLE:
 		case JAVADOC_COMMENT_STYLE:
 		case JAVADOC_TAG_STYLE:
 			return commentFont;
